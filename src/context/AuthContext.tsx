@@ -16,6 +16,18 @@ export interface User {
   employee_id?: string;
   joining_date?: string;
   employment_status?: string;
+  dob?: string;
+  blood_group?: string;
+  permanent_address?: string;
+  address?: string;
+  tin?: string;
+  bank_account_no?: string;
+  nid_no?: string;
+  fathers_name?: string;
+  mothers_name?: string;
+  emergency_contact?: string;
+  date_of_exit?: string;
+  last_salary?: string;
 }
 
 interface AuthContextType {
@@ -52,7 +64,7 @@ async function supabaseLogin(email: string, password: string): Promise<User> {
 
   const { data: profile } = await supabase
     .from('profiles')
-    .select('name, role, phone, location, job_title, bio, avatar, department, employee_id, joining_date, employment_status')
+    .select('name, role, phone, location, job_title, bio, avatar, department, employee_id, joining_date, employment_status, dob, blood_group, permanent_address, address, tin, bank_account_no, nid_no, fathers_name, mothers_name, emergency_contact, date_of_exit, last_salary')
     .eq('id', data.user.id)
     .single();
 
@@ -70,6 +82,18 @@ async function supabaseLogin(email: string, password: string): Promise<User> {
     employee_id: profile?.employee_id ?? "",
     joining_date: profile?.joining_date ?? "",
     employment_status: profile?.employment_status ?? "Active",
+    dob: profile?.dob ?? "",
+    blood_group: profile?.blood_group ?? "",
+    permanent_address: profile?.permanent_address ?? "",
+    address: profile?.address ?? "",
+    tin: profile?.tin ?? "",
+    bank_account_no: profile?.bank_account_no ?? "",
+    nid_no: profile?.nid_no ?? "",
+    fathers_name: profile?.fathers_name ?? "",
+    mothers_name: profile?.mothers_name ?? "",
+    emergency_contact: profile?.emergency_contact ?? "",
+    date_of_exit: profile?.date_of_exit ?? "",
+    last_salary: profile?.last_salary ?? "",
   };
 }
 
@@ -191,7 +215,7 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
             }
             const { data: profile } = await supabase
               .from('profiles')
-              .select('name, role, phone, location, job_title, bio, avatar, department, employee_id, joining_date, employment_status')
+              .select('name, role, phone, location, job_title, bio, avatar, department, employee_id, joining_date, employment_status, dob, blood_group, permanent_address, address, tin, bank_account_no, nid_no, fathers_name, mothers_name, emergency_contact, date_of_exit, last_salary')
               .eq('id', session.user.id)
               .single();
             setUser({
@@ -207,6 +231,18 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
               employee_id: profile?.employee_id ?? "",
               joining_date: profile?.joining_date ?? "",
               employment_status: profile?.employment_status ?? "Active",
+              dob: profile?.dob ?? "",
+              blood_group: profile?.blood_group ?? "",
+              permanent_address: profile?.permanent_address ?? "",
+              address: profile?.address ?? "",
+              tin: profile?.tin ?? "",
+              bank_account_no: profile?.bank_account_no ?? "",
+              nid_no: profile?.nid_no ?? "",
+              fathers_name: profile?.fathers_name ?? "",
+              mothers_name: profile?.mothers_name ?? "",
+              emergency_contact: profile?.emergency_contact ?? "",
+              date_of_exit: profile?.date_of_exit ?? "",
+              last_salary: profile?.last_salary ?? "",
             });
           }
           setIsLoading(false);
@@ -284,6 +320,18 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
       if ('joining_date' in updatedData) updatePayload.joining_date = updatedData.joining_date;
       if ('employment_status' in updatedData) updatePayload.employment_status = updatedData.employment_status;
       if ('role' in updatedData) updatePayload.role = updatedData.role;
+      if ('dob' in updatedData) updatePayload.dob = updatedData.dob;
+      if ('blood_group' in updatedData) updatePayload.blood_group = updatedData.blood_group;
+      if ('permanent_address' in updatedData) updatePayload.permanent_address = updatedData.permanent_address;
+      if ('address' in updatedData) updatePayload.address = updatedData.address;
+      if ('tin' in updatedData) updatePayload.tin = updatedData.tin;
+      if ('bank_account_no' in updatedData) updatePayload.bank_account_no = updatedData.bank_account_no;
+      if ('nid_no' in updatedData) updatePayload.nid_no = updatedData.nid_no;
+      if ('fathers_name' in updatedData) updatePayload.fathers_name = updatedData.fathers_name;
+      if ('mothers_name' in updatedData) updatePayload.mothers_name = updatedData.mothers_name;
+      if ('emergency_contact' in updatedData) updatePayload.emergency_contact = updatedData.emergency_contact;
+      if ('date_of_exit' in updatedData) updatePayload.date_of_exit = updatedData.date_of_exit;
+      if ('last_salary' in updatedData) updatePayload.last_salary = updatedData.last_salary;
       // avatar is excluded — no file upload UI yet
 
       const { error } = await supabase

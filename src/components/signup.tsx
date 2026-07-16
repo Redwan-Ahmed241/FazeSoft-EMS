@@ -100,11 +100,13 @@ export default function Signup() {
               type="video/mp4"
             />
           </video>
+          {/* Brand logo at the top */}
+          <div style={{ position: 'relative', zIndex: 10, display: 'flex', alignItems: 'center', gap: '10px' }}>
+            <Circle size={20} fill="white" color="white" />
+            <span style={{ color: '#fff', fontSize: '18px', fontWeight: 600, letterSpacing: '-0.01em' }}>FazeMate</span>
+          </div>
+
           <div style={{ position: 'relative', zIndex: 10, display: 'flex', flexDirection: 'column', gap: '28px' }}>
-            <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
-              <Circle size={20} fill="white" color="white" />
-              <span style={{ color: '#fff', fontSize: '18px', fontWeight: 600, letterSpacing: '-0.01em' }}>FazeMate</span>
-            </div>
             <div>
               <h1 style={{ color: '#fff', fontSize: '36px', fontWeight: 500, letterSpacing: '-0.03em', margin: '0 0 12px', lineHeight: 1.1 }}>
                 Verify your space
@@ -200,16 +202,17 @@ export default function Signup() {
           />
         </video>
 
+        {/* Brand logo at the top */}
+        <div style={{ position: 'relative', zIndex: 10, display: 'flex', alignItems: 'center', gap: '10px' }}>
+          <Circle size={20} fill="white" color="white" />
+          <span style={{ color: '#fff', fontSize: '18px', fontWeight: 600, letterSpacing: '-0.01em' }}>FazeMate</span>
+        </div>
+
         {/* Hero content — staggered motion */}
         <motion.div
           variants={heroContainer} initial="hidden" animate="show"
           style={{ position: 'relative', zIndex: 10, maxWidth: '320px', display: 'flex', flexDirection: 'column', gap: '28px' }}
         >
-          {/* Brand */}
-          <motion.div variants={heroItem} style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
-            <Circle size={20} fill="white" color="white" />
-            <span style={{ color: '#fff', fontSize: '18px', fontWeight: 600, letterSpacing: '-0.01em' }}>FazeMate</span>
-          </motion.div>
 
           {/* Heading + subtitle */}
           <motion.div variants={heroItem}>

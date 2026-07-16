@@ -34,3 +34,4 @@ yarn-error.log*
 Thumbs.db
 
 supabase_schema.sql
+add_employee_fields.sql

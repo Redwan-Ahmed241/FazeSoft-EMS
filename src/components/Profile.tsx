@@ -20,6 +20,22 @@ export function Profile() {
   const [location, setLocation] = useState(user?.location || "");
   const [jobTitle, setJobTitle] = useState(user?.job_title || "");
   const [bio, setBio] = useState(user?.bio || "");
+  
+  // Extended employee fields
+  const [employeeId, setEmployeeId] = useState(user?.employee_id || "");
+  const [dob, setDob] = useState(user?.dob || "");
+  const [joiningDate, setJoiningDate] = useState(user?.joining_date || "");
+  const [bloodGroup, setBloodGroup] = useState(user?.blood_group || "");
+  const [permanentAddress, setPermanentAddress] = useState(user?.permanent_address || "");
+  const [address, setAddress] = useState(user?.address || "");
+  const [tin, setTin] = useState(user?.tin || "");
+  const [bankAccountNo, setBankAccountNo] = useState(user?.bank_account_no || "");
+  const [nidNo, setNidNo] = useState(user?.nid_no || "");
+  const [fathersName, setFathersName] = useState(user?.fathers_name || "");
+  const [mothersName, setMothersName] = useState(user?.mothers_name || "");
+  const [emergencyContact, setEmergencyContact] = useState(user?.emergency_contact || "");
+  const [dateOfExit, setDateOfExit] = useState(user?.date_of_exit || "");
+  const [lastSalary, setLastSalary] = useState(user?.last_salary || "");
   const [isSaving, setIsSaving] = useState(false);
 
   // Sync state if user changes
@@ -32,8 +48,53 @@ export function Profile() {
       setLocation(user.location || "");
       setJobTitle(user.job_title || "");
       setBio(user.bio || "");
+      setEmployeeId(user.employee_id || "");
+      setDob(user.dob || "");
+      setJoiningDate(user.joining_date || "");
+      setBloodGroup(user.blood_group || "");
+      setPermanentAddress(user.permanent_address || "");
+      setAddress(user.address || "");
+      setTin(user.tin || "");
+      setBankAccountNo(user.bank_account_no || "");
+      setNidNo(user.nid_no || "");
+      setFathersName(user.fathers_name || "");
+      setMothersName(user.mothers_name || "");
+      setEmergencyContact(user.emergency_contact || "");
+      setDateOfExit(user.date_of_exit || "");
+      setLastSalary(user.last_salary || "");
     }
   }, [user]);
+
+  // Dynamic Tenure Calculation
+  const calculateTenure = (startStr?: string, exitStr?: string) => {
+    if (!startStr) return "N/A";
+    try {
+      const start = new Date(startStr);
+      if (isNaN(start.getTime())) return "N/A";
+      const end = exitStr ? new Date(exitStr) : new Date();
+      if (isNaN(end.getTime())) return "N/A";
+      
+      let years = end.getFullYear() - start.getFullYear();
+      let months = end.getMonth() - start.getMonth();
+      
+      if (months < 0) {
+        years--;
+        months += 12;
+      }
+      
+      if (years === 0 && months === 0) {
+        const diffDays = Math.floor((end.getTime() - start.getTime()) / (1000 * 60 * 60 * 24));
+        return `${diffDays} days`;
+      }
+      
+      const yearPart = years > 0 ? `${years} yr${years > 1 ? "s" : ""}` : "";
+      const monthPart = months > 0 ? `${months} mo${months > 1 ? "s" : ""}` : "";
+      
+      return [yearPart, monthPart].filter(Boolean).join(" ");
+    } catch (e) {
+      return "N/A";
+    }
+  };
 
   const handleSave = async () => {
     setIsSaving(true);
@@ -45,6 +106,20 @@ export function Profile() {
         location,
         job_title: jobTitle,
         bio,
+        employee_id: employeeId,
+        dob,
+        joining_date: joiningDate,
+        blood_group: bloodGroup,
+        permanent_address: permanentAddress,
+        address,
+        tin,
+        bank_account_no: bankAccountNo,
+        nid_no: nidNo,
+        fathers_name: fathersName,
+        mothers_name: mothersName,
+        emergency_contact: emergencyContact,
+        date_of_exit: dateOfExit,
+        last_salary: lastSalary,
       });
 
       if (user?.role === "candidate") {
@@ -121,6 +196,20 @@ export function Profile() {
                   setLocation(user.location || "");
                   setJobTitle(user.job_title || "");
                   setBio(user.bio || "");
+                  setEmployeeId(user.employee_id || "");
+                  setDob(user.dob || "");
+                  setJoiningDate(user.joining_date || "");
+                  setBloodGroup(user.blood_group || "");
+                  setPermanentAddress(user.permanent_address || "");
+                  setAddress(user.address || "");
+                  setTin(user.tin || "");
+                  setBankAccountNo(user.bank_account_no || "");
+                  setNidNo(user.nid_no || "");
+                  setFathersName(user.fathers_name || "");
+                  setMothersName(user.mothers_name || "");
+                  setEmergencyContact(user.emergency_contact || "");
+                  setDateOfExit(user.date_of_exit || "");
+                  setLastSalary(user.last_salary || "");
                 }
               }}
               className="rounded-xl border-2 border-input px-6 py-2 text-sm font-semibold text-foreground hover:bg-accent transition-all"
@@ -166,85 +255,260 @@ export function Profile() {
 
         {/* Personal Information Tab */}
         {activeTab === "personal" && (
-          <div className="mt-6 space-y-6">
-            <div className="grid gap-6 md:grid-cols-2">
-              <div>
-                <label className="text-sm font-medium text-foreground mb-2 block">
-                  First Name
-                </label>
-                <input
-                  type="text"
-                  value={firstName}
-                  onChange={(e) => setFirstName(e.target.value)}
-                  className="w-full rounded-lg border border-input bg-input-background px-4 py-2.5 text-sm outline-none focus:border-primary focus:ring-2 focus:ring-primary/20"
-                />
+          <div className="mt-6 space-y-8">
+            {/* Group 1: Identity & Position */}
+            <div className="space-y-4">
+              <h3 className="text-md font-bold text-foreground border-b border-border pb-2">Identity & Position</h3>
+              <div className="grid gap-6 md:grid-cols-2">
+                <div>
+                  <label className="text-sm font-medium text-foreground mb-2 block">First Name</label>
+                  <input
+                    type="text"
+                    value={firstName}
+                    onChange={(e) => setFirstName(e.target.value)}
+                    className="w-full rounded-lg border border-input bg-input-background px-4 py-2.5 text-sm outline-none focus:border-primary focus:ring-2 focus:ring-primary/20"
+                  />
+                </div>
+                <div>
+                  <label className="text-sm font-medium text-foreground mb-2 block">Last Name</label>
+                  <input
+                    type="text"
+                    value={lastName}
+                    onChange={(e) => setLastName(e.target.value)}
+                    className="w-full rounded-lg border border-input bg-input-background px-4 py-2.5 text-sm outline-none focus:border-primary focus:ring-2 focus:ring-primary/20"
+                  />
+                </div>
+                <div>
+                  <label className="text-sm font-medium text-foreground mb-2 block">Employee ID</label>
+                  <input
+                    type="text"
+                    value={employeeId}
+                    onChange={(e) => setEmployeeId(e.target.value)}
+                    placeholder="EMP-1004"
+                    className="w-full rounded-lg border border-input bg-input-background px-4 py-2.5 text-sm outline-none focus:border-primary focus:ring-2 focus:ring-primary/20"
+                  />
+                </div>
+                <div>
+                  <label className="text-sm font-medium text-foreground mb-2 block">Designation / Position</label>
+                  <input
+                    type="text"
+                    value={jobTitle}
+                    onChange={(e) => setJobTitle(e.target.value)}
+                    placeholder="Senior Frontend Developer"
+                    className="w-full rounded-lg border border-input bg-input-background px-4 py-2.5 text-sm outline-none focus:border-primary focus:ring-2 focus:ring-primary/20"
+                  />
+                </div>
               </div>
-              <div>
-                <label className="text-sm font-medium text-foreground mb-2 block">
-                  Last Name
-                </label>
-                <input
-                  type="text"
-                  value={lastName}
-                  onChange={(e) => setLastName(e.target.value)}
-                  className="w-full rounded-lg border border-input bg-input-background px-4 py-2.5 text-sm outline-none focus:border-primary focus:ring-2 focus:ring-primary/20"
-                />
+            </div>
+
+            {/* Group 2: Contact & Personal Details */}
+            <div className="space-y-4">
+              <h3 className="text-md font-bold text-foreground border-b border-border pb-2">Personal Details</h3>
+              <div className="grid gap-6 md:grid-cols-2">
+                <div>
+                  <label className="text-sm font-medium text-foreground mb-2 flex items-center gap-2">
+                    <Mail className="h-4 w-4 text-muted-foreground" />
+                    Email Address
+                  </label>
+                  <input
+                    type="email"
+                    value={user?.email || ""}
+                    disabled
+                    className="w-full rounded-lg border border-input bg-muted px-4 py-2.5 text-sm outline-none cursor-not-allowed text-muted-foreground"
+                  />
+                </div>
+                <div>
+                  <label className="text-sm font-medium text-foreground mb-2 flex items-center gap-2">
+                    <Phone className="h-4 w-4 text-muted-foreground" />
+                    Phone Number
+                  </label>
+                  <input
+                    type="tel"
+                    value={phone}
+                    onChange={(e) => setPhone(e.target.value)}
+                    placeholder="+1 (555) 123-4567"
+                    className="w-full rounded-lg border border-input bg-input-background px-4 py-2.5 text-sm outline-none focus:border-primary focus:ring-2 focus:ring-primary/20"
+                  />
+                </div>
+                <div>
+                  <label className="text-sm font-medium text-foreground mb-2 block">Date of Birth</label>
+                  <input
+                    type="date"
+                    value={dob}
+                    onChange={(e) => setDob(e.target.value)}
+                    className="w-full rounded-lg border border-input bg-input-background px-4 py-2.5 text-sm outline-none focus:border-primary focus:ring-2 focus:ring-primary/20"
+                  />
+                </div>
+                <div>
+                  <label className="text-sm font-medium text-foreground mb-2 block">Blood Group</label>
+                  <select
+                    value={bloodGroup}
+                    onChange={(e) => setBloodGroup(e.target.value)}
+                    className="w-full rounded-lg border border-input bg-input-background px-4 py-2.5 text-sm outline-none focus:border-primary focus:ring-2 focus:ring-primary/20"
+                  >
+                    <option value="">Select Blood Group</option>
+                    <option value="A+">A+</option>
+                    <option value="A-">A-</option>
+                    <option value="B+">B+</option>
+                    <option value="B-">B-</option>
+                    <option value="AB+">AB+</option>
+                    <option value="AB-">AB-</option>
+                    <option value="O+">O+</option>
+                    <option value="O-">O-</option>
+                  </select>
+                </div>
               </div>
             </div>
 
-            <div>
-              <label className="text-sm font-medium text-foreground mb-2 flex items-center gap-2">
-                <Mail className="h-4 w-4 text-muted-foreground" />
-                Email Address
-              </label>
-              <input
-                type="email"
-                value={user?.email || ""}
-                disabled
-                className="w-full rounded-lg border border-input bg-muted px-4 py-2.5 text-sm outline-none cursor-not-allowed text-muted-foreground"
-              />
+            {/* Group 3: Addresses */}
+            <div className="space-y-4">
+              <h3 className="text-md font-bold text-foreground border-b border-border pb-2">Address Details</h3>
+              <div className="grid gap-6 md:grid-cols-2">
+                <div>
+                  <label className="text-sm font-medium text-foreground mb-2 flex items-center gap-2">
+                    <MapPin className="h-4 w-4 text-muted-foreground" />
+                    Present Address
+                  </label>
+                  <textarea
+                    rows={2}
+                    value={address}
+                    onChange={(e) => setAddress(e.target.value)}
+                    placeholder="123 Present Street, City, Country"
+                    className="w-full rounded-lg border border-input bg-input-background px-4 py-2 text-sm outline-none focus:border-primary focus:ring-2 focus:ring-primary/20"
+                  />
+                </div>
+                <div>
+                  <label className="text-sm font-medium text-foreground mb-2 flex items-center gap-2">
+                    <MapPin className="h-4 w-4 text-muted-foreground" />
+                    Permanent Address
+                  </label>
+                  <textarea
+                    rows={2}
+                    value={permanentAddress}
+                    onChange={(e) => setPermanentAddress(e.target.value)}
+                    placeholder="456 Permanent Road, District, Country"
+                    className="w-full rounded-lg border border-input bg-input-background px-4 py-2 text-sm outline-none focus:border-primary focus:ring-2 focus:ring-primary/20"
+                  />
+                </div>
+              </div>
             </div>
 
-            <div>
-              <label className="text-sm font-medium text-foreground mb-2 flex items-center gap-2">
-                <Phone className="h-4 w-4 text-muted-foreground" />
-                Phone Number
-              </label>
-              <input
-                type="tel"
-                value={phone}
-                onChange={(e) => setPhone(e.target.value)}
-                placeholder="+1 (555) 123-4567"
-                className="w-full rounded-lg border border-input bg-input-background px-4 py-2.5 text-sm outline-none focus:border-primary focus:ring-2 focus:ring-primary/20"
-              />
+            {/* Group 4: Identification & Finance */}
+            <div className="space-y-4">
+              <h3 className="text-md font-bold text-foreground border-b border-border pb-2">Identification & Finance</h3>
+              <div className="grid gap-6 md:grid-cols-2">
+                <div>
+                  <label className="text-sm font-medium text-foreground mb-2 block">TIN Number</label>
+                  <input
+                    type="text"
+                    value={tin}
+                    onChange={(e) => setTin(e.target.value)}
+                    placeholder="1234567890"
+                    className="w-full rounded-lg border border-input bg-input-background px-4 py-2.5 text-sm outline-none focus:border-primary focus:ring-2 focus:ring-primary/20"
+                  />
+                </div>
+                <div>
+                  <label className="text-sm font-medium text-foreground mb-2 block">NID / National ID Number</label>
+                  <input
+                    type="text"
+                    value={nidNo}
+                    onChange={(e) => setNidNo(e.target.value)}
+                    placeholder="1995000000000000"
+                    className="w-full rounded-lg border border-input bg-input-background px-4 py-2.5 text-sm outline-none focus:border-primary focus:ring-2 focus:ring-primary/20"
+                  />
+                </div>
+                <div>
+                  <label className="text-sm font-medium text-foreground mb-2 block">Bank Account Number</label>
+                  <input
+                    type="text"
+                    value={bankAccountNo}
+                    onChange={(e) => setBankAccountNo(e.target.value)}
+                    placeholder="0021-123456789-01"
+                    className="w-full rounded-lg border border-input bg-input-background px-4 py-2.5 text-sm outline-none focus:border-primary focus:ring-2 focus:ring-primary/20"
+                  />
+                </div>
+                <div>
+                  <label className="text-sm font-medium text-foreground mb-2 block">Last Salary Withdrawn</label>
+                  <input
+                    type="text"
+                    value={lastSalary}
+                    onChange={(e) => setLastSalary(e.target.value)}
+                    placeholder="$4,500 / Month"
+                    className="w-full rounded-lg border border-input bg-input-background px-4 py-2.5 text-sm outline-none focus:border-primary focus:ring-2 focus:ring-primary/20"
+                  />
+                </div>
+              </div>
             </div>
 
-            <div>
-              <label className="text-sm font-medium text-foreground mb-2 flex items-center gap-2">
-                <MapPin className="h-4 w-4 text-muted-foreground" />
-                Location
-              </label>
-              <input
-                type="text"
-                value={location}
-                onChange={(e) => setLocation(e.target.value)}
-                placeholder="New York, NY"
-                className="w-full rounded-lg border border-input bg-input-background px-4 py-2.5 text-sm outline-none focus:border-primary focus:ring-2 focus:ring-primary/20"
-              />
+            {/* Group 5: Family & Emergency */}
+            <div className="space-y-4">
+              <h3 className="text-md font-bold text-foreground border-b border-border pb-2">Family & Emergency Contacts</h3>
+              <div className="grid gap-6 md:grid-cols-2">
+                <div>
+                  <label className="text-sm font-medium text-foreground mb-2 block">Father's Name</label>
+                  <input
+                    type="text"
+                    value={fathersName}
+                    onChange={(e) => setFathersName(e.target.value)}
+                    className="w-full rounded-lg border border-input bg-input-background px-4 py-2.5 text-sm outline-none focus:border-primary focus:ring-2 focus:ring-primary/20"
+                  />
+                </div>
+                <div>
+                  <label className="text-sm font-medium text-foreground mb-2 block">Mother's Name</label>
+                  <input
+                    type="text"
+                    value={mothersName}
+                    onChange={(e) => setMothersName(e.target.value)}
+                    className="w-full rounded-lg border border-input bg-input-background px-4 py-2.5 text-sm outline-none focus:border-primary focus:ring-2 focus:ring-primary/20"
+                  />
+                </div>
+                <div>
+                  <label className="text-sm font-medium text-foreground mb-2 block">Emergency Contact Name/Relation</label>
+                  <input
+                    type="text"
+                    value={emergencyContact}
+                    onChange={(e) => setEmergencyContact(e.target.value)}
+                    placeholder="Jane Doe (Spouse) - +1 (555) 987-6543"
+                    className="w-full rounded-lg border border-input bg-input-background px-4 py-2.5 text-sm outline-none focus:border-primary focus:ring-2 focus:ring-primary/20"
+                  />
+                </div>
+              </div>
             </div>
 
-            <div>
-              <label className="text-sm font-medium text-foreground mb-2 flex items-center gap-2">
-                <Briefcase className="h-4 w-4 text-muted-foreground" />
-                {user?.role === "hr" ? "Job Title" : "Target/Desired Position"}
-              </label>
-              <input
-                type="text"
-                value={jobTitle}
-                onChange={(e) => setJobTitle(e.target.value)}
-                placeholder={user?.role === "hr" ? "HR Manager" : "Senior Frontend Developer"}
-                className="w-full rounded-lg border border-input bg-input-background px-4 py-2.5 text-sm outline-none focus:border-primary focus:ring-2 focus:ring-primary/20"
-              />
+            {/* Group 6: Tenure & History */}
+            <div className="space-y-4">
+              <h3 className="text-md font-bold text-foreground border-b border-border pb-2">Job Tenure & History</h3>
+              <div className="grid gap-6 md:grid-cols-2">
+                <div>
+                  <label className="text-sm font-medium text-foreground mb-2 block">Date of Joining (DOJ)</label>
+                  <input
+                    type="date"
+                    value={joiningDate}
+                    onChange={(e) => setJoiningDate(e.target.value)}
+                    className="w-full rounded-lg border border-input bg-input-background px-4 py-2.5 text-sm outline-none focus:border-primary focus:ring-2 focus:ring-primary/20"
+                  />
+                </div>
+                <div>
+                  <label className="text-sm font-medium text-foreground mb-2 block">Date of Exit</label>
+                  <input
+                    type="date"
+                    value={dateOfExit}
+                    onChange={(e) => setDateOfExit(e.target.value)}
+                    className="w-full rounded-lg border border-input bg-input-background px-4 py-2.5 text-sm outline-none focus:border-primary focus:ring-2 focus:ring-primary/20"
+                  />
+                </div>
+                <div className="md:col-span-2">
+                  <div className="rounded-xl bg-primary/5 border border-primary/20 p-4">
+                    <p className="text-sm font-semibold text-primary">Job Tenure Calculation</p>
+                    <p className="text-2xl font-bold text-foreground mt-1">
+                      {calculateTenure(joiningDate, dateOfExit)}
+                    </p>
+                    <p className="text-xs text-muted-foreground mt-1">
+                      Computed dynamically based on Date of Joining and Date of Exit (or today's date if active).
+                    </p>
+                  </div>
+                </div>
+              </div>
             </div>
 
             <div>

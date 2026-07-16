@@ -90,26 +90,18 @@ export default function Login() {
           />
         </video>
 
+        {/* Brand logo at the top */}
+        <div style={{ position: 'relative', zIndex: 10, display: 'flex', alignItems: 'center', gap: '10px' }}>
+          <Circle size={20} fill="white" color="white" />
+          <span style={{ color: '#fff', fontSize: '18px', fontWeight: 600, letterSpacing: '-0.01em' }}>FazeMate</span>
+        </div>
+
         {/* Hero content — staggered motion */}
         <motion.div
           variants={heroContainer} initial="hidden" animate="show"
           style={{ position: 'relative', zIndex: 10, maxWidth: '340px', display: 'flex', flexDirection: 'column', gap: '28px' }}
         >
-          {/* Brand */}
-          <motion.div variants={heroItem} style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
-            <Circle size={20} fill="white" color="white" />
-            <span style={{ color: '#fff', fontSize: '18px', fontWeight: 600, letterSpacing: '-0.01em' }}>FazeMate</span>
-          </motion.div>
-
-          {/* Badge */}
           <motion.div variants={heroItem}>
-            <div style={{
-              display: 'inline-flex', alignItems: 'center', gap: '8px',
-              background: 'rgba(255,255,255,0.08)', border: '1px solid rgba(255,255,255,0.15)',
-              borderRadius: '100px', padding: '6px 14px', marginBottom: '16px',
-            }}>
-              <span style={{ color: '#c4b5fd', fontSize: '13px', fontWeight: 500 }}>✦ Trusted by 2,000+ HR teams</span>
-            </div>
             <h1 style={{ color: '#fff', fontSize: '36px', fontWeight: 500, letterSpacing: '-0.03em', margin: '0 0 12px', lineHeight: 1.1 }}>
               Find the Right Talent.<br />Build the Right Future.
             </h1>
