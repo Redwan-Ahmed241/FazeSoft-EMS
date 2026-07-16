@@ -212,7 +212,7 @@ export function PortalCareer() {
             <div className="portal-logo-icon">
               <Briefcase style={{ width: 18, height: 18, color: '#fff' }} />
             </div>
-            <span className="portal-logo-text">HireMate</span>
+            <span className="portal-logo-text">FazeMate</span>
           </div>
 
           <div className="portal-nav-links">
@@ -316,7 +316,7 @@ export function PortalCareer() {
         >
           <div className="portal-action-card-content">
             <h3>{isAuthenticated ? 'My Profile' : 'Upload your CV'}</h3>
-            <p>{isAuthenticated ? 'View and edit your profile details' : 'Find your dream job with HireMate'}</p>
+            <p>{isAuthenticated ? 'View and edit your profile details' : 'Find your dream job with FazeMate'}</p>
           </div>
           <div className="portal-action-card-icon">
             <Upload style={{ width: 24, height: 24 }} />
@@ -419,9 +419,9 @@ export function PortalCareer() {
       <footer className="portal-footer">
         <div className="portal-footer-inner">
           <div className="portal-footer-brand">
-            <span className="portal-footer-brand-name">HireMate</span>
+            <span className="portal-footer-brand-name">FazeMate</span>
             <span className="portal-footer-brand-tagline">
-              Your AI-powered hiring assistant.<br/>
+              FazeMate — Connecting Talent with Opportunity.<br/>
               Streamlining talent acquisition.
             </span>
           </div>

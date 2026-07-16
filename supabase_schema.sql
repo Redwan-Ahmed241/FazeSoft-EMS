@@ -1,5 +1,5 @@
 -- ═══════════════════════════════════════════════════════════════
---  HireMate — Supabase Schema
+--  FazeMate — Supabase Schema
 --  Run this in: Supabase Dashboard → SQL Editor → New Query
 -- ═══════════════════════════════════════════════════════════════
 

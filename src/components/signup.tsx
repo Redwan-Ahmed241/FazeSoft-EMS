@@ -103,7 +103,7 @@ export default function Signup() {
           <div style={{ position: 'relative', zIndex: 10, display: 'flex', flexDirection: 'column', gap: '28px' }}>
             <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
               <Circle size={20} fill="white" color="white" />
-              <span style={{ color: '#fff', fontSize: '18px', fontWeight: 600, letterSpacing: '-0.01em' }}>Hiremate</span>
+              <span style={{ color: '#fff', fontSize: '18px', fontWeight: 600, letterSpacing: '-0.01em' }}>FazeMate</span>
             </div>
             <div>
               <h1 style={{ color: '#fff', fontSize: '36px', fontWeight: 500, letterSpacing: '-0.03em', margin: '0 0 12px', lineHeight: 1.1 }}>
@@ -127,7 +127,7 @@ export default function Signup() {
             {/* Mobile brand (visible only on small screens) */}
             <div className="auth-mobile-brand">
               <Circle size={20} fill="white" color="white" />
-              <span style={{ color: '#fff', fontSize: '18px', fontWeight: 600, letterSpacing: '-0.01em' }}>Hiremate</span>
+              <span style={{ color: '#fff', fontSize: '18px', fontWeight: 600, letterSpacing: '-0.01em' }}>FazeMate</span>
             </div>
 
             <div style={{
@@ -208,13 +208,13 @@ export default function Signup() {
           {/* Brand */}
           <motion.div variants={heroItem} style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
             <Circle size={20} fill="white" color="white" />
-            <span style={{ color: '#fff', fontSize: '18px', fontWeight: 600, letterSpacing: '-0.01em' }}>Hiremate</span>
+            <span style={{ color: '#fff', fontSize: '18px', fontWeight: 600, letterSpacing: '-0.01em' }}>FazeMate</span>
           </motion.div>
 
           {/* Heading + subtitle */}
           <motion.div variants={heroItem}>
             <h1 style={{ color: '#fff', fontSize: '36px', fontWeight: 500, letterSpacing: '-0.03em', margin: '0 0 12px', lineHeight: 1.1 }}>
-              Join Hiremate
+              Join FazeMate
             </h1>
             <p style={{ color: 'rgba(255,255,255,0.6)', fontSize: '14px', lineHeight: 1.6, margin: 0 }}>
               Follow these 3 quick phases to activate your space.
@@ -262,7 +262,7 @@ export default function Signup() {
           {/* Mobile brand (visible only on small screens) */}
           <div className="auth-mobile-brand">
             <Circle size={20} fill="white" color="white" />
-            <span style={{ color: '#fff', fontSize: '18px', fontWeight: 600, letterSpacing: '-0.01em' }}>Hiremate</span>
+            <span style={{ color: '#fff', fontSize: '18px', fontWeight: 600, letterSpacing: '-0.01em' }}>FazeMate</span>
           </div>
 
           {/* Header */}

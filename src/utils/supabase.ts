@@ -15,7 +15,7 @@ const SUPABASE_ANON = import.meta.env.VITE_SUPABASE_ANON_KEY as string;
 
 if (!SUPABASE_URL || !SUPABASE_ANON) {
   console.warn(
-    '[HireMate] Supabase env vars missing. ' +
+    '[FazeMate] Supabase env vars missing. ' +
     'Create a .env file with VITE_SUPABASE_URL and VITE_SUPABASE_ANON_KEY.'
   );
 }

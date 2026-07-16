@@ -22,8 +22,8 @@ interface PortalAuthContextType {
 const PortalAuthContext = createContext<PortalAuthContextType | undefined>(undefined);
 
 const USE_SUPABASE = !!import.meta.env.VITE_SUPABASE_URL;
-const LS_PORTAL_CANDIDATE = 'hiremate_portal_candidate_user';
-const LS_PORTAL_CANDIDATES = 'hiremate_portal_candidates';
+const LS_PORTAL_CANDIDATE = 'fazemate_portal_candidate_user';
+const LS_PORTAL_CANDIDATES = 'fazemate_portal_candidates';
 
 export const PortalAuthProvider: React.FC<{ children: ReactNode }> = ({ children }) => {
   const [candidate, setCandidate] = useState<PortalCandidate | null>(null);
@@ -33,7 +33,7 @@ export const PortalAuthProvider: React.FC<{ children: ReactNode }> = ({ children
     const initAuth = async () => {
       try {
         if (USE_SUPABASE) {
-          const sessionCandidateId = localStorage.getItem('hiremate_portal_candidate_session_id');
+          const sessionCandidateId = localStorage.getItem('fazemate_portal_candidate_session_id');
           if (sessionCandidateId) {
             const { supabase } = await import('../utils/supabase');
             const { data, error } = await supabase
@@ -52,7 +52,7 @@ export const PortalAuthProvider: React.FC<{ children: ReactNode }> = ({ children
                 skills: data.skills || '',
               });
             } else {
-              localStorage.removeItem('hiremate_portal_candidate_session_id');
+              localStorage.removeItem('fazemate_portal_candidate_session_id');
             }
           }
         } else {
@@ -92,7 +92,7 @@ export const PortalAuthProvider: React.FC<{ children: ReactNode }> = ({ children
         skills: data.skills || '',
       };
       setCandidate(user);
-      localStorage.setItem('hiremate_portal_candidate_session_id', user.id);
+      localStorage.setItem('fazemate_portal_candidate_session_id', user.id);
     } else {
       const candidates = JSON.parse(localStorage.getItem(LS_PORTAL_CANDIDATES) || '[]');
       const matched = candidates.find((c: any) => c.email.toLowerCase().trim() === email.toLowerCase().trim() && c.password === password);
@@ -148,7 +148,7 @@ export const PortalAuthProvider: React.FC<{ children: ReactNode }> = ({ children
         skills: data.skills || '',
       };
       setCandidate(user);
-      localStorage.setItem('hiremate_portal_candidate_session_id', user.id);
+      localStorage.setItem('fazemate_portal_candidate_session_id', user.id);
     } else {
       const candidates = JSON.parse(localStorage.getItem(LS_PORTAL_CANDIDATES) || '[]');
       const existing = candidates.find((c: any) => c.email.toLowerCase().trim() === cleanEmail);
@@ -183,7 +183,7 @@ export const PortalAuthProvider: React.FC<{ children: ReactNode }> = ({ children
   const logout = () => {
     setCandidate(null);
     if (USE_SUPABASE) {
-      localStorage.removeItem('hiremate_portal_candidate_session_id');
+      localStorage.removeItem('fazemate_portal_candidate_session_id');
     } else {
       localStorage.removeItem(LS_PORTAL_CANDIDATE);
     }

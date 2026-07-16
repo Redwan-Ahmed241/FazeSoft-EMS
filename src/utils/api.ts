@@ -1,5 +1,5 @@
 /**
- * api.ts — API utility for HireMate frontend.
+ * api.ts — API utility for FazeMate frontend.
  *
  * MODE: json-server (temporary, until Supabase/FastAPI is ready)
  * Candidates → http://localhost:3001/candidates

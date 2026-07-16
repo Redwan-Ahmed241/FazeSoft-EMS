@@ -22,28 +22,28 @@ function generateAIEmail(candidate: CandidateData, templateType: string): { subj
   switch (templateType) {
     case "interview_invite":
       return {
-        subject: `Interview Invitation - ${candidate.position} at HireMate`,
-        body: `Dear ${candidate.name},\n\nThank you for your interest in the ${candidate.position} position at HireMate. After reviewing your application and impressive background with ${candidate.experience} of experience, we would like to invite you for an interview.\n\nYour skills in ${candidate.skills.join(", ")} align well with what we're looking for, and we're excited to learn more about your experience.\n\nPlease let us know your availability for the upcoming week so we can schedule a convenient time for both parties.\n\nWe look forward to speaking with you.\n\nBest regards,\nHireMate Recruitment Team`,
+        subject: `Interview Invitation - ${candidate.position} at FazeMate`,
+        body: `Dear ${candidate.name},\n\nThank you for your interest in the ${candidate.position} position at FazeMate. After reviewing your application and impressive background with ${candidate.experience} of experience, we would like to invite you for an interview.\n\nYour skills in ${candidate.skills.join(", ")} align well with what we're looking for, and we're excited to learn more about your experience.\n\nPlease let us know your availability for the upcoming week so we can schedule a convenient time for both parties.\n\nWe look forward to speaking with you.\n\nBest regards,\nFazeMate Recruitment Team`,
       };
     case "follow_up":
       return {
         subject: `Following Up - ${candidate.position} Application`,
-        body: `Dear ${candidate.name},\n\nI hope this message finds you well. I wanted to follow up regarding your application for the ${candidate.position} role at HireMate.\n\nWe were particularly impressed by your expertise in ${candidate.skills.slice(0, 2).join(" and ")} and your ${candidate.experience} of professional experience. Our team is currently in the evaluation phase, and we wanted to keep you updated on your application status.\n\nIf you have any questions or need additional information about the role, please don't hesitate to reach out.\n\nThank you for your patience, and we'll be in touch soon with next steps.\n\nBest regards,\nHireMate Recruitment Team`,
+        body: `Dear ${candidate.name},\n\nI hope this message finds you well. I wanted to follow up regarding your application for the ${candidate.position} role at FazeMate.\n\nWe were particularly impressed by your expertise in ${candidate.skills.slice(0, 2).join(" and ")} and your ${candidate.experience} of professional experience. Our team is currently in the evaluation phase, and we wanted to keep you updated on your application status.\n\nIf you have any questions or need additional information about the role, please don't hesitate to reach out.\n\nThank you for your patience, and we'll be in touch soon with next steps.\n\nBest regards,\nFazeMate Recruitment Team`,
       };
     case "offer_letter":
       return {
-        subject: `Offer Letter - ${candidate.position} at HireMate`,
-        body: `Dear ${candidate.name},\n\nCongratulations! We are thrilled to extend an offer for the ${candidate.position} position at HireMate.\n\nAfter careful consideration and a thorough evaluation process, our team was highly impressed by your ${candidate.experience} of experience and your exceptional skills in ${candidate.skills.join(", ")}. We believe you would be an outstanding addition to our team.\n\nPlease find the offer details below:\n- Position: ${candidate.position}\n- Start Date: To be discussed\n- Compensation: To be discussed\n\nWe kindly ask that you review the offer and respond within 5 business days. Should you have any questions or wish to discuss the terms, please don't hesitate to contact us.\n\nWe're excited about the possibility of you joining our team!\n\nBest regards,\nHireMate Recruitment Team`,
+        subject: `Offer Letter - ${candidate.position} at FazeMate`,
+        body: `Dear ${candidate.name},\n\nCongratulations! We are thrilled to extend an offer for the ${candidate.position} position at FazeMate.\n\nAfter careful consideration and a thorough evaluation process, our team was highly impressed by your ${candidate.experience} of experience and your exceptional skills in ${candidate.skills.join(", ")}. We believe you would be an outstanding addition to our team.\n\nPlease find the offer details below:\n- Position: ${candidate.position}\n- Start Date: To be discussed\n- Compensation: To be discussed\n\nWe kindly ask that you review the offer and respond within 5 business days. Should you have any questions or wish to discuss the terms, please don't hesitate to contact us.\n\nWe're excited about the possibility of you joining our team!\n\nBest regards,\nFazeMate Recruitment Team`,
       };
     case "rejection":
       return {
         subject: `Update on Your Application - ${candidate.position}`,
-        body: `Dear ${candidate.name},\n\nThank you for taking the time to apply for the ${candidate.position} position at HireMate and for your interest in joining our team.\n\nAfter careful consideration, we have decided to move forward with other candidates whose qualifications more closely match our current requirements. This was a difficult decision, as we were impressed by your skills in ${candidate.skills.slice(0, 2).join(" and ")}.\n\nWe encourage you to apply for future openings that match your experience. We will keep your resume on file for any upcoming opportunities.\n\nWe wish you the very best in your career journey.\n\nSincerely,\nHireMate Recruitment Team`,
+        body: `Dear ${candidate.name},\n\nThank you for taking the time to apply for the ${candidate.position} position at FazeMate and for your interest in joining our team.\n\nAfter careful consideration, we have decided to move forward with other candidates whose qualifications more closely match our current requirements. This was a difficult decision, as we were impressed by your skills in ${candidate.skills.slice(0, 2).join(" and ")}.\n\nWe encourage you to apply for future openings that match your experience. We will keep your resume on file for any upcoming opportunities.\n\nWe wish you the very best in your career journey.\n\nSincerely,\nFazeMate Recruitment Team`,
       };
     default:
       return {
         subject: `Regarding Your Application - ${candidate.position}`,
-        body: `Dear ${candidate.name},\n\nThank you for your application for the ${candidate.position} position at HireMate.\n\nBest regards,\nHireMate Recruitment Team`,
+        body: `Dear ${candidate.name},\n\nThank you for your application for the ${candidate.position} position at FazeMate.\n\nBest regards,\nFazeMate Recruitment Team`,
       };
   }
 }
@@ -95,7 +95,7 @@ Current Stage:  ${candidate.status}
 Applied Date:   ${new Date(candidate.appliedDate).toLocaleDateString("en-US", { month: "long", day: "numeric", year: "numeric" })}
 
 ════════════════════════════════════════════════════
-         Generated by HireMate ATS
+          Generated by FazeMate ATS
 ════════════════════════════════════════════════════
 `.trim();
 }

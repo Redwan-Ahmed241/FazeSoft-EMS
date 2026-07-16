@@ -102,7 +102,7 @@ export function JobPosting() {
   };
 
   const handleCopyLink = (job: JobPost) => {
-    const url = `https://hiremate.app/careers/${job.id}/${job.title.toLowerCase().replace(/[^a-z0-9]+/g, "-")}`;
+    const url = `https://fazemate.app/careers/${job.id}/${job.title.toLowerCase().replace(/[^a-z0-9]+/g, "-")}`;
     navigator.clipboard.writeText(url).catch(() => {});
     setLinkCopied(true);
     toast.success("Link copied to clipboard!");
@@ -110,7 +110,7 @@ export function JobPosting() {
   };
 
   const handleShareToPlatform = (platform: string, job: JobPost) => {
-    const url = encodeURIComponent(`https://hiremate.app/careers/${job.id}/${job.title.toLowerCase().replace(/[^a-z0-9]+/g, "-")}`);
+    const url = encodeURIComponent(`https://fazemate.app/careers/${job.id}/${job.title.toLowerCase().replace(/[^a-z0-9]+/g, "-")}`);
     const text = encodeURIComponent(`We're hiring! Check out this ${job.title} position at our company. ${job.salary} | ${job.location} | ${job.type}`);
     let shareUrl = "";
 
@@ -582,7 +582,7 @@ export function JobPosting() {
               <label className="text-xs font-medium text-muted-foreground mb-2 block">Job Link</label>
               <div className="flex gap-2">
                 <div className="flex-1 rounded-lg border border-input bg-input-background px-3 py-2.5 text-sm text-muted-foreground truncate">
-                  https://hiremate.app/careers/{shareJob.id}/{shareJob.title.toLowerCase().replace(/[^a-z0-9]+/g, "-")}
+                  https://fazemate.app/careers/{shareJob.id}/{shareJob.title.toLowerCase().replace(/[^a-z0-9]+/g, "-")}
                 </div>
                 <button
                   onClick={() => handleCopyLink(shareJob)}

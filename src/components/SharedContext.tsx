@@ -173,9 +173,9 @@ interface SharedContextType {
 
 const SharedContext = createContext<SharedContextType | null>(null);
 
-const LS_INTERVIEWS = "hiremate_interviews";
-const LS_NOTIFICATIONS = "hiremate_notifications";
-const LS_JOBS = "hiremate_jobs";
+const LS_INTERVIEWS = "fazemate_interviews";
+const LS_NOTIFICATIONS = "fazemate_notifications";
+const LS_JOBS = "fazemate_jobs";
 
 export function SharedProvider({ children }: { children: ReactNode }) {
   const { user } = useAuth();
@@ -339,7 +339,7 @@ export function SharedProvider({ children }: { children: ReactNode }) {
           }
         } else {
           // Local storage fallback
-          const accountsStr = localStorage.getItem("hiremate_accounts");
+          const accountsStr = localStorage.getItem("fazemate_accounts");
           if (accountsStr) {
             const accounts = JSON.parse(accountsStr);
             const staff = accounts.filter((a: any) => a.role !== "candidate");
@@ -572,7 +572,7 @@ export function SharedProvider({ children }: { children: ReactNode }) {
         await sendNotification(data.id, title, message, type);
       }
     } else {
-      const accounts = JSON.parse(localStorage.getItem("hiremate_accounts") || "[]");
+      const accounts = JSON.parse(localStorage.getItem("fazemate_accounts") || "[]");
       const matched = accounts.find((a: any) => a.email === candidateEmail);
       if (matched?.id) {
         await sendNotification(matched.id, title, message, type);
@@ -622,7 +622,7 @@ export function SharedProvider({ children }: { children: ReactNode }) {
           let result = await doSave(extendedPayload);
           if (result.error?.message?.includes("schema cache")) {
             // Missing columns — run supabase_migration_v2.sql to fix permanently
-            console.warn("[HireMate] Retrying without education/certifications — run supabase_migration_v2.sql");
+            console.warn("[FazeMate] Retrying without education/certifications — run supabase_migration_v2.sql");
             result = await doSave(basePayload);
           }
           return result;
@@ -1011,7 +1011,7 @@ export function SharedProvider({ children }: { children: ReactNode }) {
             }
           } else {
             // local storage approach
-            const accounts = JSON.parse(localStorage.getItem("hiremate_accounts") || "[]");
+            const accounts = JSON.parse(localStorage.getItem("fazemate_accounts") || "[]");
             const newAccount = {
               email: emp.email,
               password: rawPassword || "password123",
@@ -1023,7 +1023,7 @@ export function SharedProvider({ children }: { children: ReactNode }) {
               employment_status: emp.status || "Active",
             };
             accounts.push(newAccount);
-            localStorage.setItem("hiremate_accounts", JSON.stringify(accounts));
+            localStorage.setItem("fazemate_accounts", JSON.stringify(accounts));
             
             setEmployees(prev => [...prev, {
               id: newAccount.id,
@@ -1046,11 +1046,11 @@ export function SharedProvider({ children }: { children: ReactNode }) {
             const { supabase } = await import("../utils/supabase");
             await supabase.from("profiles").update({ role: dbRole }).eq("id", id);
           } else {
-            const accounts = JSON.parse(localStorage.getItem("hiremate_accounts") || "[]");
+            const accounts = JSON.parse(localStorage.getItem("fazemate_accounts") || "[]");
             const idx = accounts.findIndex((a: any) => a.id === id || a.email === id);
             if (idx !== -1) {
               accounts[idx].role = dbRole;
-              localStorage.setItem("hiremate_accounts", JSON.stringify(accounts));
+              localStorage.setItem("fazemate_accounts", JSON.stringify(accounts));
             }
           }
           setEmployees(prev => prev.map(e => e.id === id ? { ...e, role: newRole } : e));

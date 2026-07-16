@@ -115,7 +115,7 @@ export function Settings() {
 
   // Load settings from localStorage on mount
   useEffect(() => {
-    const stored = localStorage.getItem("hiremate_settings");
+    const stored = localStorage.getItem("fazemate_settings");
     if (stored) {
       try {
         const parsed = JSON.parse(stored);
@@ -190,7 +190,7 @@ export function Settings() {
     await new Promise((r) => setTimeout(r, 800));
     
     // Save to localStorage
-    localStorage.setItem("hiremate_settings", JSON.stringify(settings));
+    localStorage.setItem("fazemate_settings", JSON.stringify(settings));
     
     setSavedSettings({ ...settings });
     setIsSaving(false);

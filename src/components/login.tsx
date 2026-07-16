@@ -98,7 +98,7 @@ export default function Login() {
           {/* Brand */}
           <motion.div variants={heroItem} style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
             <Circle size={20} fill="white" color="white" />
-            <span style={{ color: '#fff', fontSize: '18px', fontWeight: 600, letterSpacing: '-0.01em' }}>Hiremate</span>
+            <span style={{ color: '#fff', fontSize: '18px', fontWeight: 600, letterSpacing: '-0.01em' }}>FazeMate</span>
           </motion.div>
 
           {/* Badge */}
@@ -111,10 +111,10 @@ export default function Login() {
               <span style={{ color: '#c4b5fd', fontSize: '13px', fontWeight: 500 }}>✦ Trusted by 2,000+ HR teams</span>
             </div>
             <h1 style={{ color: '#fff', fontSize: '36px', fontWeight: 500, letterSpacing: '-0.03em', margin: '0 0 12px', lineHeight: 1.1 }}>
-              Hire smarter,<br />not harder.
+              Find the Right Talent.<br />Build the Right Future.
             </h1>
             <p style={{ color: 'rgba(255,255,255,0.6)', fontSize: '14px', lineHeight: 1.6, margin: 0, maxWidth: '300px' }}>
-              AI-powered candidate ranking, pipeline management, and team collaboration — all in one place.
+              FazeMate connects ambitious companies with skilled professionals through a modern, intelligent hiring platform designed for growth.
             </p>
           </motion.div>
 
@@ -132,7 +132,7 @@ export default function Login() {
             borderRadius: '16px', padding: '20px',
           }}>
             <p style={{ color: 'rgba(255,255,255,0.8)', fontSize: '13px', fontStyle: 'italic', lineHeight: 1.6, margin: '0 0 14px' }}>
-              "HireMate cut our time-to-hire by 40%. The AI ranking alone is worth every penny."
+              "FazeMate cut our time-to-hire by 40%. The AI ranking alone is worth every penny."
             </p>
             <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
               <div style={{
@@ -160,7 +160,7 @@ export default function Login() {
           {/* Mobile brand (visible only on small screens) */}
           <div className="auth-mobile-brand">
             <Circle size={20} fill="white" color="white" />
-            <span style={{ color: '#fff', fontSize: '18px', fontWeight: 600, letterSpacing: '-0.01em' }}>Hiremate</span>
+            <span style={{ color: '#fff', fontSize: '18px', fontWeight: 600, letterSpacing: '-0.01em' }}>FazeMate</span>
           </div>
 
           {/* Header */}
@@ -169,7 +169,7 @@ export default function Login() {
               Welcome back
             </h2>
             <p style={{ fontSize: '14px', color: 'rgba(255,255,255,0.4)', margin: 0 }}>
-              Sign in to your Hiremate account.
+              Sign in to your FazeMate account.
             </p>
           </div>
 

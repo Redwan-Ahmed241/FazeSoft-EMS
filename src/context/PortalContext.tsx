@@ -43,9 +43,9 @@ interface PortalContextType {
 const PortalContext = createContext<PortalContextType | undefined>(undefined);
 
 const USE_SUPABASE = !!import.meta.env.VITE_SUPABASE_URL;
-const LS_PORTAL_APPLICATIONS = 'hiremate_portal_applications';
-const LS_PORTAL_CANDIDATES = 'hiremate_portal_candidates';
-const LS_JOBS = 'hiremate_jobs';
+const LS_PORTAL_APPLICATIONS = 'fazemate_portal_applications';
+const LS_PORTAL_CANDIDATES = 'fazemate_portal_candidates';
+const LS_JOBS = 'fazemate_jobs';
 
 const MOCK_PROFILES = [
   { name: "Anisur Rahman", email: "anisur@example.com", phone: "+8801711223344", location: "Dhaka, Bangladesh", skills: "React, TypeScript, Node.js, Tailwind CSS, REST APIs" },

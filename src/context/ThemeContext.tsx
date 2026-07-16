@@ -11,7 +11,7 @@ interface ThemeContextType {
 
 const ThemeContext = createContext<ThemeContextType | null>(null);
 
-const LS_KEY = "hiremate_theme";
+const LS_KEY = "fazemate_theme";
 
 function getSystemPreference(): "light" | "dark" {
   if (typeof window === "undefined") return "light";

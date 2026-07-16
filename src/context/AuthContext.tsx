@@ -117,8 +117,8 @@ interface StoredAccount {
   phone?: string; location?: string; job_title?: string; bio?: string; avatar?: string;
   department?: string; employee_id?: string; joining_date?: string; employment_status?: string;
 }
-const LS_USER     = 'hiremate_user';
-const LS_ACCOUNTS = 'hiremate_accounts';
+const LS_USER     = 'fazemate_user';
+const LS_ACCOUNTS = 'fazemate_accounts';
 
 function localLogin(email: string, password: string): User {
   const accounts: StoredAccount[] = JSON.parse(localStorage.getItem(LS_ACCOUNTS) || '[]');

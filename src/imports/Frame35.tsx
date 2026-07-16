@@ -14,7 +14,7 @@ export default function Frame() {
         </div>
       </div>
       <span className="font-semibold text-lg text-foreground tracking-wide">
-        HIREMATE
+        FAZEMATE
       </span>
     </div>
   );
