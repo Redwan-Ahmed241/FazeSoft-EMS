@@ -36,6 +36,5 @@ Thumbs.db
 supabase_schema.sql
 add_employee_fields.sql
 supabase_career_portal_schema.sql
-supabase_schema.sql
-supabase_schema.sql
-supabase_schema.sql
+supabase_complete_setup.sql
+
