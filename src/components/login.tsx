@@ -4,23 +4,6 @@ import { motion } from 'motion/react';
 import { Circle, Eye, EyeOff } from 'lucide-react';
 import { useAuth } from '../context/AuthContext';
 
-// ── Reusable stat card for left panel ────────────────────────
-
-function StatCard({ value, label }: { value: string; label: string }) {
-  return (
-    <div style={{
-      background: 'rgba(255,255,255,0.07)',
-      border: '1px solid rgba(255,255,255,0.10)',
-      borderRadius: '16px', padding: '16px 20px',
-    }}>
-      <div style={{ color: '#a78bfa', fontSize: '22px', fontWeight: 800, letterSpacing: '-0.03em' }}>{value}</div>
-      <div style={{ color: 'rgba(255,255,255,0.5)', fontSize: '13px', marginTop: '2px' }}>{label}</div>
-    </div>
-  );
-}
-
-
-
 // ── Animation variants ────────────────────────────────────────
 
 const heroContainer = {
@@ -99,7 +82,7 @@ export default function Login() {
         {/* Hero content — staggered motion */}
         <motion.div
           variants={heroContainer} initial="hidden" animate="show"
-          style={{ position: 'relative', zIndex: 10, maxWidth: '340px', display: 'flex', flexDirection: 'column', gap: '28px' }}
+          style={{ position: 'relative', zIndex: 10, maxWidth: '340px', display: 'flex', flexDirection: 'column', gap: '28px', margin: 'auto 0' }}
         >
           <motion.div variants={heroItem}>
             <h1 style={{ color: '#fff', fontSize: '36px', fontWeight: 500, letterSpacing: '-0.03em', margin: '0 0 12px', lineHeight: 1.1 }}>
@@ -110,35 +93,7 @@ export default function Login() {
             </p>
           </motion.div>
 
-          {/* Stats grid */}
-          <motion.div variants={heroItem} style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '12px' }}>
-            <StatCard value="2,000+" label="HR Teams" />
-            <StatCard value="40%"    label="Faster Hiring" />
-            <StatCard value="98%"    label="Satisfaction" />
-            <StatCard value="500K+"  label="Candidates" />
-          </motion.div>
-
-          {/* Testimonial */}
-          <motion.div variants={heroItem} style={{
-            background: 'rgba(255,255,255,0.06)', border: '1px solid rgba(255,255,255,0.10)',
-            borderRadius: '16px', padding: '20px',
-          }}>
-            <p style={{ color: 'rgba(255,255,255,0.8)', fontSize: '13px', fontStyle: 'italic', lineHeight: 1.6, margin: '0 0 14px' }}>
-              "FazeMate cut our time-to-hire by 40%. The AI ranking alone is worth every penny."
-            </p>
-            <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
-              <div style={{
-                width: '32px', height: '32px', borderRadius: '50%', flexShrink: 0,
-                background: 'linear-gradient(135deg,#a78bfa,#6d28d9)',
-                display: 'flex', alignItems: 'center', justifyContent: 'center',
-                color: '#fff', fontWeight: 700, fontSize: '13px',
-              }}>S</div>
-              <div>
-                <p style={{ color: '#fff', fontSize: '13px', fontWeight: 600, margin: 0 }}>Sarah Chen</p>
-                <p style={{ color: '#a78bfa', fontSize: '12px', margin: 0 }}>Head of Talent, Acme Corp</p>
-              </div>
-            </div>
-          </motion.div>
+          {/* The stats and testimonial have been removed from here. */}
         </motion.div>
       </div>
 

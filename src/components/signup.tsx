@@ -106,7 +106,7 @@ export default function Signup() {
             <span style={{ color: '#fff', fontSize: '18px', fontWeight: 600, letterSpacing: '-0.01em' }}>FazeMate</span>
           </div>
 
-          <div style={{ position: 'relative', zIndex: 10, display: 'flex', flexDirection: 'column', gap: '28px' }}>
+          <div style={{ position: 'relative', zIndex: 10, display: 'flex', flexDirection: 'column', gap: '28px', margin: 'auto 0' }}>
             <div>
               <h1 style={{ color: '#fff', fontSize: '36px', fontWeight: 500, letterSpacing: '-0.03em', margin: '0 0 12px', lineHeight: 1.1 }}>
                 Verify your space
@@ -211,7 +211,7 @@ export default function Signup() {
         {/* Hero content — staggered motion */}
         <motion.div
           variants={heroContainer} initial="hidden" animate="show"
-          style={{ position: 'relative', zIndex: 10, maxWidth: '320px', display: 'flex', flexDirection: 'column', gap: '28px' }}
+          style={{ position: 'relative', zIndex: 10, maxWidth: '320px', display: 'flex', flexDirection: 'column', gap: '28px', margin: 'auto 0' }}
         >
 
           {/* Heading + subtitle */}
