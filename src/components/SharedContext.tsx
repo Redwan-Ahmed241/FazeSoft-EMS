@@ -60,6 +60,26 @@ export interface EmployeeData {
   employment_status?: string;
 }
 
+// ── Employee portal: tasks ───────────────────────────────────
+export type TaskStatus = "assigned" | "in_progress" | "completed";
+export type TaskPriority = "low" | "medium" | "high";
+
+export interface TaskData {
+  id: string;
+  title: string;
+  description: string;
+  status: TaskStatus;
+  priority: TaskPriority;
+  dueDate: string;        // YYYY-MM-DD
+  assigneeEmail: string;
+  assigneeName: string;
+  department: string;     // team the task belongs to (same as assignee's team)
+  createdBy: string;
+  createdAt: string;      // YYYY-MM-DD
+  completedAt: string | null; // YYYY-MM-DD when completed
+  progress: number;       // 0-100
+}
+
 export interface JobPost {
   id: number;
   title: string;
@@ -169,6 +189,10 @@ interface SharedContextType {
   addJob: (job: Omit<JobPost, "id"> & { id?: number }) => Promise<void>;
   updateJob: (id: number, updates: Partial<JobPost>) => Promise<void>;
   deleteJob: (id: number) => Promise<void>;
+  // Employee portal: tasks
+  tasks: TaskData[];
+  updateTaskStatus: (id: string, status: TaskStatus) => void;
+  updateTaskProgress: (id: string, progress: number) => void;
 }
 
 const SharedContext = createContext<SharedContextType | null>(null);
@@ -176,6 +200,124 @@ const SharedContext = createContext<SharedContextType | null>(null);
 const LS_INTERVIEWS = "fazemate_interviews";
 const LS_NOTIFICATIONS = "fazemate_notifications";
 const LS_JOBS = "fazemate_jobs";
+const LS_TASKS = "fazemate_tasks";
+
+// ── Employee portal: task seeding ────────────────────────────
+const TASK_TEMPLATES: Array<{ title: string; description: string; priority: TaskPriority }> = [
+  { title: "Complete onboarding checklist", description: "Finish all onboarding items including compliance training and tool access setup.", priority: "high" },
+  { title: "Prepare weekly status report", description: "Summarize progress, blockers, and next steps for the team lead.", priority: "medium" },
+  { title: "Refactor legacy module", description: "Clean up the legacy module and improve maintainability for the next release.", priority: "high" },
+  { title: "Attend daily team standup", description: "Daily 15-minute sync to align on progress and unblock teammates.", priority: "low" },
+  { title: "Write technical documentation", description: "Document the recently shipped feature for the internal knowledge base.", priority: "medium" },
+  { title: "Code review — open PRs", description: "Review pull requests from the team and leave constructive feedback.", priority: "medium" },
+  { title: "Fix critical bug in checkout flow", description: "Resolve the reported crash in the checkout flow before the next deploy.", priority: "high" },
+  { title: "Update handbook section", description: "Refresh the remote-work policy section of the employee handbook.", priority: "low" },
+  { title: "Prep for performance review", description: "Gather data and notes ahead of the quarterly review session.", priority: "medium" },
+  { title: "Optimize dashboard load time", description: "Reduce bundle size and improve initial render speed of the main dashboard.", priority: "high" },
+  { title: "Draft quarterly goals", description: "Write down measurable goals for the upcoming quarter with your manager.", priority: "medium" },
+  { title: "Run regression tests", description: "Execute the regression suite and report any failing cases.", priority: "high" },
+  { title: "Update skill profile", description: "Refresh skills and certifications on your employee profile.", priority: "low" },
+  { title: "Review security training", description: "Complete the mandatory annual security awareness training.", priority: "high" },
+];
+
+function hashString(str: string): number {
+  let h = 0;
+  for (let i = 0; i < str.length; i++) h = (h * 31 + str.charCodeAt(i)) | 0;
+  return Math.abs(h);
+}
+
+interface TaskAssigneeSeed {
+  name: string;
+  email: string;
+  department?: string;
+}
+
+function generateTasksForAssignee(a: TaskAssigneeSeed): TaskData[] {
+  const seed = hashString((a.email || a.name || "").toLowerCase());
+  const dept = a.department || "General";
+  const today = new Date();
+  const iso = (d: Date) => d.toISOString().slice(0, 10);
+  const tasks: TaskData[] = [];
+
+  // 5 tasks per person, deterministic per email
+  for (let i = 0; i < 5; i++) {
+    const tpl = TASK_TEMPLATES[(seed + i * 3) % TASK_TEMPLATES.length];
+    const roll = (seed + i * 7) % 10;
+    let status: TaskStatus;
+    if (roll < 3) status = "completed";
+    else if (roll < 6) status = "in_progress";
+    else status = "assigned";
+
+    const due = new Date(today);
+    due.setDate(due.getDate() + ((seed + i * 7) % 20) - 5); // -5 .. +14 days
+    const created = new Date(today);
+    created.setDate(created.getDate() - ((seed + i * 5) % 30) - 1);
+
+    let completedAt: string | null = null;
+    let progress = 0;
+    if (status === "completed") {
+      const done = new Date(today);
+      done.setDate(done.getDate() - ((seed + i) % 10));
+      completedAt = iso(done);
+      progress = 100;
+    } else if (status === "in_progress") {
+      progress = 20 + ((seed + i * 13) % 60);
+    }
+
+    tasks.push({
+      id: `${a.email || a.name}-${seed}-${i}`,
+      title: tpl.title,
+      description: tpl.description,
+      status,
+      priority: tpl.priority,
+      dueDate: iso(due),
+      assigneeEmail: a.email || "",
+      assigneeName: a.name || "Employee",
+      department: dept,
+      createdBy: "HR Team",
+      createdAt: iso(created),
+      completedAt,
+      progress,
+    });
+  }
+  return tasks;
+}
+
+function mapApiTask(t: any): TaskData {
+  return {
+    id: String(t.id),
+    title: t.title ?? "",
+    description: t.description ?? "",
+    status: (t.status as TaskStatus) ?? "assigned",
+    priority: (t.priority as TaskPriority) ?? "medium",
+    dueDate: t.due_date ?? "",
+    assigneeEmail: t.assignee_email ?? "",
+    assigneeName: t.assignee_name ?? "",
+    department: t.department ?? "",
+    createdBy: t.created_by ?? "",
+    createdAt: t.created_at ?? "",
+    completedAt: t.completed_at ?? null,
+    progress: t.progress ?? 0,
+  };
+}
+
+function toApiTask(t: TaskData): Record<string, unknown> {
+  return {
+    id: t.id,
+    title: t.title,
+    description: t.description,
+    status: t.status,
+    priority: t.priority,
+    due_date: t.dueDate,
+    assignee_email: t.assigneeEmail,
+    assignee_name: t.assigneeName,
+    department: t.department,
+    created_by: t.createdBy,
+    created_at: t.createdAt,
+    completed_at: t.completedAt,
+    progress: t.progress,
+  };
+}
 
 export function SharedProvider({ children }: { children: ReactNode }) {
   const { user } = useAuth();
@@ -184,6 +326,8 @@ export function SharedProvider({ children }: { children: ReactNode }) {
   const [notifications, setNotifications] = useState<NotificationData[]>([]);
   const [employees, setEmployees] = useState<EmployeeData[]>([]);
   const [jobs, setJobs] = useState<JobPost[]>([]);
+  const [tasks, setTasks] = useState<TaskData[]>([]);
+  const [tasksReady, setTasksReady] = useState(false);
   const [candidatesLoading, setCandidatesLoading] = useState(true);
   const [candidatesError, setCandidatesError] = useState<string | null>(null);
 
@@ -336,8 +480,12 @@ export function SharedProvider({ children }: { children: ReactNode }) {
               employment_status: p.employment_status || "Active",
             }));
             setEmployees(mapped);
+            return;
           }
-        } else {
+          // If the Supabase profiles table has no staff rows, fall back to
+          // local accounts (mirrors the fallback used for jobs/notifications).
+        }
+        {
           // Local storage fallback
           const accountsStr = localStorage.getItem("fazemate_accounts");
           if (accountsStr) {
@@ -369,6 +517,105 @@ export function SharedProvider({ children }: { children: ReactNode }) {
     };
     loadEmployees();
   }, [user]);
+
+  // ── 3.5b Employee portal: load & seed tasks ──
+  useEffect(() => {
+    const loadTasks = async () => {
+      if (!user) return;
+      let list: TaskData[] = [];
+      if (useSupabase) {
+        try {
+          const { supabase } = await import("../utils/supabase");
+          const { data, error } = await supabase.from("tasks").select("*");
+          if (!error && data && data.length > 0) list = (data as any[]).map(mapApiTask);
+        } catch (err) {
+          console.warn("Failed to load tasks from Supabase:", err);
+        }
+      }
+      if (list.length === 0) {
+        const stored = localStorage.getItem(LS_TASKS);
+        if (stored) {
+          try { list = JSON.parse(stored); } catch { list = []; }
+        }
+      }
+
+      let changed = false;
+      // Seed tasks for every staff member that doesn't have any yet
+      const staff: TaskAssigneeSeed[] = employees
+        .filter((e) => e.email && e.role !== "Viewer")
+        .map((e) => ({ name: e.name, email: e.email, department: e.department }));
+      for (const emp of staff) {
+        const key = emp.email.toLowerCase();
+        const has = list.some((t) => t.assigneeEmail.toLowerCase() === key);
+        if (!has) {
+          list = list.concat(generateTasksForAssignee(emp));
+          changed = true;
+        }
+      }
+      // Ensure the logged-in employee always has tasks (even without a directory row)
+      if (user.role === "employee" && user.email) {
+        const key = user.email.toLowerCase();
+        const has = list.some((t) => t.assigneeEmail.toLowerCase() === key);
+        if (!has) {
+          list = list.concat(generateTasksForAssignee({
+            name: user.name || user.email.split("@")[0],
+            email: user.email,
+            department: user.department || "General",
+          }));
+          changed = true;
+        }
+      }
+
+      if (changed) setTasks(list);
+      else setTasks(list.length ? list : []);
+      setTasksReady(true);
+    };
+    loadTasks();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [user, employees]);
+
+  // Persist tasks whenever they change (localStorage always, Supabase when available)
+  useEffect(() => {
+    if (!tasksReady) return;
+    localStorage.setItem(LS_TASKS, JSON.stringify(tasks));
+    if (useSupabase && tasks.length > 0) {
+      import("../utils/supabase").then(({ supabase }) => {
+        supabase.from("tasks").upsert(tasks.map(toApiTask), { onConflict: "id" })
+          .then(() => {})
+          .catch((err) => console.warn("Failed to sync tasks to Supabase:", err));
+      });
+    }
+  }, [tasks, tasksReady, useSupabase]);
+
+  const updateTaskStatus = (id: string, status: TaskStatus) => {
+    setTasks((prev) =>
+      prev.map((t) => {
+        if (t.id !== id) return t;
+        const today = new Date().toISOString().slice(0, 10);
+        if (status === "completed") {
+          return { ...t, status, progress: 100, completedAt: t.completedAt || today };
+        }
+        if (status === "in_progress") {
+          return { ...t, status, progress: t.progress > 0 && t.progress < 100 ? t.progress : 10, completedAt: null };
+        }
+        // assigned
+        return { ...t, status, completedAt: null };
+      })
+    );
+  };
+
+  const updateTaskProgress = (id: string, progress: number) => {
+    setTasks((prev) =>
+      prev.map((t) => {
+        if (t.id !== id) return t;
+        const clamped = Math.max(0, Math.min(100, Math.round(progress)));
+        if (clamped >= 100) {
+          return { ...t, progress: 100, status: "completed", completedAt: t.completedAt || new Date().toISOString().slice(0, 10) };
+        }
+        return { ...t, progress: clamped, status: clamped > 0 ? "in_progress" : t.status };
+      })
+    );
+  };
 
   // ── 3.6 Fetch jobs ──
   useEffect(() => {
@@ -971,18 +1218,31 @@ export function SharedProvider({ children }: { children: ReactNode }) {
           // Employee creation logic to be called by Admin
           const newRole = emp.role === "Super Admin" ? "admin" : emp.role === "HR Manager" ? "hr" : emp.role === "Employee" ? "employee" : "employee";
           if (useSupabase) {
-            // Note: In a real app, creating another user via Supabase client as an authenticated user 
-            // usually requires a backend function or admin privileges. For this demo, we'll try standard sign up.
             const { supabase } = await import("../utils/supabase");
-            // Workaround for demo: we can't easily sign up a new user without logging out the admin, 
-            // but we can try if there's an admin API, or we just insert into profiles directly if allowed.
-            // For true Supabase Auth, you'd use a server function. 
-            // For demo purposes, we will just create a local employee row to visualize it if auth fails.
+            // 1) Create the employee LOGIN account on the FastAPI backend (users table)
+            //    → this is what lets the employee actually sign in to the app.
+            const backendBase = import.meta.env.VITE_API_URL || 'http://localhost:8000/api';
+            const res = await fetch(`${backendBase}/auth/create-employee`, {
+              method: 'POST',
+              headers: { 'Content-Type': 'application/json' },
+              body: JSON.stringify({
+                email: emp.email,
+                password: rawPassword || 'password123',
+                full_name: emp.name,
+                job_title: emp.jobTitle,
+              }),
+            });
+            if (!res.ok) {
+              const errData = await res.json().catch(() => ({}));
+              throw new Error(errData?.detail || 'Failed to create employee login account.');
+            }
+
+            // 2) Show the employee in the directory (profiles table).
+            //    If the insert is blocked (e.g. RLS), still show them locally.
+            let mapped: EmployeeData;
             try {
-              // Let's just create a dummy row in profiles if possible, but Auth signup is tricky from client.
-              const fakeId = "new_emp_" + Date.now();
               const { data, error } = await supabase.from('profiles').insert([{
-                id: fakeId,
+                id: crypto.randomUUID(), // valid UUID (the old fake id was invalid)
                 name: emp.name,
                 email: emp.email,
                 role: newRole,
@@ -990,25 +1250,35 @@ export function SharedProvider({ children }: { children: ReactNode }) {
                 department: emp.department,
                 employment_status: emp.status,
               }]).select();
-              
-              if (data && data[0]) {
-                const mapped: EmployeeData = {
-                  id: data[0].id,
-                  name: data[0].name || "Unknown",
-                  email: data[0].email || "",
-                  jobTitle: data[0].job_title || "Staff",
-                  role: data[0].role === "admin" ? "Super Admin" : data[0].role === "hr" ? "HR Manager" : "Employee",
-                  status: data[0].employment_status || "Permanent",
-                  statusColor: "bg-green-100 text-green-700",
-                  securityStatus: "Pending",
-                  avatar: "",
-                  department: data[0].department || "",
-                };
-                setEmployees(prev => [...prev, mapped]);
-              }
+              if (error) console.warn("Login account created, but directory row failed:", error.message);
+              mapped = {
+                id: data?.[0]?.id || crypto.randomUUID(),
+                name: data?.[0]?.name || emp.name || "Unknown",
+                email: data?.[0]?.email || emp.email || "",
+                jobTitle: data?.[0]?.job_title || emp.jobTitle || "Staff",
+                role: newRole === "admin" ? "Super Admin" : newRole === "hr" ? "HR Manager" : "Employee",
+                status: data?.[0]?.employment_status || emp.status || "Permanent",
+                statusColor: "bg-green-100 text-green-700",
+                securityStatus: "Pending",
+                avatar: "",
+                department: data?.[0]?.department || emp.department || "",
+              };
             } catch (err) {
               console.error("Supabase create user error:", err);
+              mapped = {
+                id: crypto.randomUUID(),
+                name: emp.name || "Unknown",
+                email: emp.email || "",
+                jobTitle: emp.jobTitle || "Staff",
+                role: newRole === "admin" ? "Super Admin" : newRole === "hr" ? "HR Manager" : "Employee",
+                status: emp.status || "Permanent",
+                statusColor: "bg-green-100 text-green-700",
+                securityStatus: "Pending",
+                avatar: "",
+                department: emp.department || "",
+              };
             }
+            setEmployees(prev => [...prev, mapped]);
           } else {
             // local storage approach
             const accounts = JSON.parse(localStorage.getItem("fazemate_accounts") || "[]");
@@ -1059,6 +1329,9 @@ export function SharedProvider({ children }: { children: ReactNode }) {
         addJob,
         updateJob,
         deleteJob,
+        tasks,
+        updateTaskStatus,
+        updateTaskProgress,
       }}
     >
       {children}

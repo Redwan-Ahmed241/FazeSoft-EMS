@@ -16,6 +16,10 @@ import Signup from "./components/signup";
 import { PortalCareer } from "./components/PortalCareer";
 import { PortalAuthProvider } from "./context/PortalAuthContext";
 import { PortalProvider } from "./context/PortalContext";
+import { EmployeeDashboard } from "./components/employee/EmployeeDashboard";
+import { MyTasks } from "./components/employee/MyTasks";
+import { TeamProgress } from "./components/employee/TeamProgress";
+import { History } from "./components/employee/History";
 
 export const router = createBrowserRouter([
   {
@@ -57,6 +61,9 @@ export const router = createBrowserRouter([
       { path: "candidate", Component: () => <ProtectedRoute allowedRoles={["hr", "admin"]}><Candidate /></ProtectedRoute> },
       { path: "calendar", Component: CalendarPage },
       { path: "resume-parsing", Component: ResumeParsing },
+      { path: "tasks", Component: () => <ProtectedRoute allowedRoles={["employee"]}><MyTasks /></ProtectedRoute> },
+      { path: "team", Component: () => <ProtectedRoute allowedRoles={["employee"]}><TeamProgress /></ProtectedRoute> },
+      { path: "history", Component: () => <ProtectedRoute allowedRoles={["employee"]}><History /></ProtectedRoute> },
       { path: "profile", Component: Profile },
       { path: "settings", Component: Settings },
     ],

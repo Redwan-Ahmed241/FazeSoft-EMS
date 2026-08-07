@@ -22,6 +22,8 @@ import {
   Settings as SettingsIcon,
   Shield,
   ClipboardList,
+  ListTodo,
+  History as HistoryIcon,
 } from "lucide-react";
 
 function getNotifColor(type: string): string {
@@ -51,6 +53,9 @@ const allMenuItems = [
   { path: "/dashboard/job-posting",   icon: Briefcase,       label: "Analytics",  roles: ["hr", "admin"] },
   { path: "/dashboard/resume-parsing",icon: FileSearch,      label: "Analyse Resumes",  roles: ["hr", "admin"] },
   { path: "/dashboard/resume-parsing",icon: FileSearch,      label: "My Resume",  roles: ["candidate"] },
+  { path: "/dashboard/tasks",         icon: ListTodo,       label: "My Tasks",    roles: ["employee"] },
+  { path: "/dashboard/team",          icon: Users,           label: "Team Progress", roles: ["employee"] },
+  { path: "/dashboard/history",       icon: HistoryIcon,     label: "My History",  roles: ["employee"] },
   { path: "/dashboard/report",        icon: FileText,        label: "Reports",    roles: ["hr", "admin"] },
   { path: "/dashboard/profile",       icon: User,            label: "Profile",    roles: ["hr", "candidate", "admin", "employee"] },
   { path: "/dashboard/settings",      icon: SettingsIcon,    label: "Settings",   roles: ["hr", "candidate", "admin", "employee"] },

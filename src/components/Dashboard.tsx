@@ -11,6 +11,7 @@ import { BarChart, Bar, XAxis, YAxis, ResponsiveContainer, Cell } from "recharts
 import { toast } from "sonner@2.0.3";
 import { useAuth } from "../context/AuthContext";
 import { useSharedContext } from "./SharedContext";
+import { EmployeeDashboard } from "./employee/EmployeeDashboard";
 
 // ─── Static HR Data ────────────────────────────────────────────────────────────
 
@@ -506,5 +507,7 @@ function CandidateDashboard() {
 
 export function Dashboard() {
   const { user } = useAuth();
-  return (user?.role === "hr" || user?.role === "admin") ? <HRDashboard /> : <CandidateDashboard />;
+  if (user?.role === "hr" || user?.role === "admin") return <HRDashboard />;
+  if (user?.role === "employee") return <EmployeeDashboard />;
+  return <CandidateDashboard />;
 }

@@ -51,6 +51,48 @@ const AuthContext = createContext<AuthContextType | undefined>(undefined);
 // ─────────────────────────────────────────────────────────────
 const USE_SUPABASE = !!import.meta.env.VITE_SUPABASE_URL;
 
+// FastAPI backend base URL (used for employee login / account creation)
+const API_BASE_URL = import.meta.env.VITE_API_URL || 'http://localhost:8000/api';
+
+// ── Backend (FastAPI) Auth — used for employees ──────────────
+async function backendLogin(email: string, password: string): Promise<User> {
+  const response = await fetch(`${API_BASE_URL}/auth/login`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ email, password }),
+  });
+
+  if (!response.ok) {
+    let detail = 'Incorrect email or password.';
+    try {
+      const data = await response.json();
+      detail = data?.detail || detail;
+    } catch { /* keep default */ }
+    throw new Error(detail);
+  }
+
+  const data = await response.json();
+  // Store the JWT so apiClient/backend calls are authenticated
+  localStorage.setItem('token', data.access_token);
+
+  const u = data.user;
+  return {
+    id: u.id,
+    email: u.email,
+    name: u.full_name || '',
+    role: (u.role as UserRole) ?? 'employee',
+    phone: u.phone || '',
+    location: u.location || '',
+    job_title: u.job_title || '',
+    bio: u.bio || '',
+    avatar: u.avatar || '',
+    department: '',
+    employee_id: '',
+    joining_date: '',
+    employment_status: 'Active',
+  };
+}
+
 // ── Supabase Auth (active when VITE_SUPABASE_URL is set) ─────
 async function supabaseLogin(email: string, password: string): Promise<User> {
   const { supabase } = await import('../utils/supabase');
@@ -244,18 +286,27 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
               date_of_exit: profile?.date_of_exit ?? "",
               last_salary: profile?.last_salary ?? "",
             });
+            // Supabase session is active → clear any stored backend session
+            localStorage.removeItem(LS_USER);
+          } else {
+            // No Supabase session → restore a backend-logged-in employee if any
+            const stored = localStorage.getItem(LS_USER);
+            if (stored) { try { setUser(JSON.parse(stored)); } catch { localStorage.removeItem(LS_USER); } }
           }
           setIsLoading(false);
         });
         // Keep session in sync
         supabase.auth.onAuthStateChange((_event, session) => {
-          if (!session) { 
-            setUser(null); 
-            setIsLoading(false); 
+          const restoreBackend = () => {
+            const stored = localStorage.getItem(LS_USER);
+            if (stored) { try { setUser(JSON.parse(stored)); } catch { localStorage.removeItem(LS_USER); } }
+            setIsLoading(false);
+          };
+          if (!session) {
+            restoreBackend();
           } else if (!session.user.email_confirmed_at) {
             supabase.auth.signOut();
-            setUser(null);
-            setIsLoading(false);
+            restoreBackend();
           }
         });
       });
@@ -267,9 +318,26 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
   }, []);
 
   const login = async (email: string, password: string) => {
-    const u = USE_SUPABASE ? await supabaseLogin(email, password) : localLogin(email, password);
+    if (USE_SUPABASE) {
+      try {
+        const u = await supabaseLogin(email, password);
+        setUser(u);
+        localStorage.removeItem(LS_USER); // ensure no stale backend session
+        return;
+      } catch (err: unknown) {
+        // Only fall back to the backend when Supabase has no matching account.
+        const msg = err instanceof Error ? err.message : '';
+        if (/verified/i.test(msg)) throw err; // email verification flow — do not fall through
+      }
+      // Employee login via the FastAPI backend (users table)
+      const u = await backendLogin(email, password);
+      setUser(u);
+      localStorage.setItem(LS_USER, JSON.stringify(u));
+      return;
+    }
+    const u = localLogin(email, password);
     setUser(u);
-    if (!USE_SUPABASE) localStorage.setItem(LS_USER, JSON.stringify(u));
+    localStorage.setItem(LS_USER, JSON.stringify(u));
   };
 
   const signup = async (email: string, password: string, name: string, role: UserRole = 'candidate') => {
@@ -295,7 +363,8 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
   const logout = () => {
     setUser(null);
     if (USE_SUPABASE) supabaseLogout();
-    else localStorage.removeItem(LS_USER);
+    localStorage.removeItem(LS_USER);
+    localStorage.removeItem('token');
   };
 
   const updateProfile = async (updatedData: Partial<User>) => {

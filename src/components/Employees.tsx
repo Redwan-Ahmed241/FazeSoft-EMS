@@ -57,21 +57,34 @@ export function Employees() {
       toast.error("Please fill required fields.");
       return;
     }
-    await addEmployee({
-      name: formName,
-      email: formEmail,
-      jobTitle: formJobTitle,
-      role: formRole,
-      department: formDepartment,
-      status: "Active"
-    }, "password123");
-    toast.success("User added successfully!");
-    setShowRoleModal(false);
-    setFormName("");
-    setFormEmail("");
-    setFormJobTitle("");
-    setFormDepartment("");
-    setFormRole("Employee");
+    // Generate a random temporary password for the new employee
+    const tempPassword = Math.random().toString(36).slice(-8); // e.g. "x7f3k9qz"
+    try {
+      await addEmployee({
+        name: formName,
+        email: formEmail,
+        jobTitle: formJobTitle,
+        role: formRole,
+        department: formDepartment,
+        status: "Active"
+      }, tempPassword);
+      toast.success("User added successfully!", {
+        description: `Temporary password for ${formEmail}: ${tempPassword}`,
+        action: {
+          label: "Copy",
+          onClick: () => navigator.clipboard.writeText(tempPassword),
+        },
+        duration: 15000,
+      });
+      setShowRoleModal(false);
+      setFormName("");
+      setFormEmail("");
+      setFormJobTitle("");
+      setFormDepartment("");
+      setFormRole("Employee");
+    } catch (err: unknown) {
+      toast.error(err instanceof Error ? err.message : "Failed to add user.");
+    }
   };
 
   const filteredEmployees = employees.filter((employee) => {

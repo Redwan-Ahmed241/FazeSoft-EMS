@@ -174,14 +174,14 @@ export function Profile() {
           </div>
           <div className="flex-1 text-center md:text-left">
             <h2 className="text-xl font-bold text-foreground">{firstName} {lastName}</h2>
-            <p className="text-sm text-muted-foreground">{jobTitle || (user?.role === "hr" ? "HR Professional" : "Candidate")}</p>
+            <p className="text-sm text-muted-foreground">{jobTitle || (user?.role === "hr" ? "HR Professional" : user?.role === "employee" ? "Employee" : user?.role === "admin" ? "Administrator" : "Candidate")}</p>
             <div className="mt-2 flex flex-wrap gap-2 justify-center md:justify-start">
               <span className="inline-flex items-center gap-1 rounded-full bg-green-100 px-3 py-1 text-xs font-medium text-green-700">
                 <Shield className="h-3 w-3" />
                 Verified Account
               </span>
               <span className="inline-flex items-center gap-1 rounded-full bg-purple-100 px-3 py-1 text-xs font-medium text-purple-700">
-                {user?.role === "hr" ? "HR Manager" : "Candidate Portal"}
+                {user?.role === "hr" ? "HR Manager" : user?.role === "employee" ? "Employee Portal" : user?.role === "admin" ? "Admin Portal" : "Candidate Portal"}
               </span>
             </div>
           </div>
