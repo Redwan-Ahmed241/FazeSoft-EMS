@@ -1,7 +1,9 @@
 import { createContext, useContext, useState, useEffect, ReactNode } from "react";
-import { candidateApi, type CandidateApiData } from "../utils/api";
-import { getToken } from "../utils/api";
-import { useAuth } from "../context/AuthContext";
+import { candidateApi } from "../api/candidates";
+import { getToken } from "../api/client";
+import type { CandidateOut as CandidateApiData } from "../types/candidate";
+import { authApi } from "../api/auth";
+import { useAuth } from "./AuthContext";
 
 export interface CandidateData {
   id: number;
@@ -1221,20 +1223,17 @@ export function SharedProvider({ children }: { children: ReactNode }) {
             const { supabase } = await import("../utils/supabase");
             // 1) Create the employee LOGIN account on the FastAPI backend (users table)
             //    → this is what lets the employee actually sign in to the app.
-            const backendBase = import.meta.env.VITE_API_URL || 'http://localhost:8000/api';
-            const res = await fetch(`${backendBase}/auth/create-employee`, {
-              method: 'POST',
-              headers: { 'Content-Type': 'application/json' },
-              body: JSON.stringify({
+            try {
+              await authApi.createEmployee({
                 email: emp.email,
                 password: rawPassword || 'password123',
                 full_name: emp.name,
                 job_title: emp.jobTitle,
-              }),
-            });
-            if (!res.ok) {
-              const errData = await res.json().catch(() => ({}));
-              throw new Error(errData?.detail || 'Failed to create employee login account.');
+              });
+            } catch (err: unknown) {
+              throw new Error(
+                err instanceof Error ? err.message : 'Failed to create employee login account.'
+              );
             }
 
             // 2) Show the employee in the directory (profiles table).

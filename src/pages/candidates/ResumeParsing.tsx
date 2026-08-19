@@ -1,9 +1,10 @@
 import { useState, useCallback } from "react";
 import { Upload, FileText, Loader2, CheckCircle, XCircle, Eye, Download, Trash2, Sparkles, UserPlus, RefreshCw } from "lucide-react";
 import { toast } from "sonner@2.0.3";
-import { useSharedContext, type CandidateData } from "./SharedContext";
-import { useAuth } from "../context/AuthContext";
-import { usePortal } from "../context/PortalContext";
+import { useSharedContext, type CandidateData } from "../../context/SharedContext";
+import { useAuth } from "../../context/AuthContext";
+import { usePortal } from "../../context/PortalContext";
+import { parseResume } from "../../api/resumes";
 
 interface ParsedResumeData {
   personalDetails: {
@@ -48,26 +49,8 @@ interface ParsedResume {
 //  API Helper — sends file to backend for parsing
 // ─────────────────────────────────────────────────────────────
 
-const API_BASE_URL = import.meta.env.VITE_API_URL || "http://localhost:8000/api";
-
 async function parseResumeViaApi(file: File): Promise<ParsedResumeData> {
-  const formData = new FormData();
-  formData.append("file", file);
-
-  const token = localStorage.getItem("token");
-
-  const response = await fetch(`${API_BASE_URL}/resumes/parse`, {
-    method: "POST",
-    headers: token ? { Authorization: `Bearer ${token}` } : {},
-    body: formData,
-  });
-
-  if (!response.ok) {
-    const errorData = await response.json().catch(() => ({ detail: "Unknown error" }));
-    throw new Error(errorData.detail || `Server error: ${response.status}`);
-  }
-
-  return await response.json();
+  return parseResume<ParsedResumeData>(file);
 }
 
 async function parseJsonLocally(file: File): Promise<ParsedResumeData> {

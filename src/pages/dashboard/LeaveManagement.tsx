@@ -1,15 +1,15 @@
 import { useState } from 'react';
 import { Calendar, Clock, Check, X, Plus, FileText } from 'lucide-react';
-import { Card, CardContent, CardHeader, CardTitle } from './ui/card';
-import { Button } from './ui/button';
-import { Input } from './ui/input';
-import { Label } from './ui/label';
-import { Textarea } from './ui/textarea';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from './ui/select';
-import { Badge } from './ui/badge';
-import { Avatar, AvatarFallback, AvatarImage } from './ui/avatar';
-import { Tabs, TabsContent, TabsList, TabsTrigger } from './ui/tabs';
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from './ui/dialog';
+import { Card, CardContent, CardHeader, CardTitle } from '../../components/common/ui/card';
+import { Button } from '../../components/common/ui/button';
+import { Input } from '../../components/common/ui/input';
+import { Label } from '../../components/common/ui/label';
+import { Textarea } from '../../components/common/ui/textarea';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '../../components/common/ui/select';
+import { Badge } from '../../components/common/ui/badge';
+import { Avatar, AvatarFallback, AvatarImage } from '../../components/common/ui/avatar';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '../../components/common/ui/tabs';
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from '../../components/common/ui/dialog';
 
 const leaveRequests = [
   {

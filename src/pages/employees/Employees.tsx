@@ -1,10 +1,10 @@
 import { useState, useEffect } from "react";
 import { Search, UserPlus, Shield, ShieldCheck, Edit, Trash2, X, Check, Users, ChevronRight, UserMinus, UserRoundPlus, AlertTriangle, Loader2 } from "lucide-react";
 import { toast } from "sonner@2.0.3";
-import { useAuth } from "../context/AuthContext";
-import { supabase } from "../utils/supabase";
-import { useSharedContext } from "./SharedContext";
-import InitialsAvatar from "./ui/InitialsAvatar";
+import { useAuth } from "../../context/AuthContext";
+import { supabase } from "../../utils/supabase";
+import { useSharedContext } from "../../context/SharedContext";
+import InitialsAvatar from "../../components/common/ui/InitialsAvatar";
 
 const USE_SUPABASE = !!import.meta.env.VITE_SUPABASE_URL;
 

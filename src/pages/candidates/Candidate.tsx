@@ -1,9 +1,9 @@
 import { useState } from "react";
 import { Search, Mail, MessageSquare, Phone, Download, Eye, Star, Filter, Sparkles, TrendingUp, Award, Target, X, MapPin, Calendar, Briefcase, Clock, ChevronRight, FileText, User, Send, Wand2, Copy, Check, CheckCircle2, XCircle, Trash2 } from "lucide-react";
 import { RadialBarChart, RadialBar, PolarAngleAxis } from "recharts";
-import { useSharedContext, type CandidateData } from "./SharedContext";
+import { useSharedContext, type CandidateData } from "../../context/SharedContext";
 import { toast } from "sonner@2.0.3";
-import InitialsAvatar from "./ui/InitialsAvatar";
+import InitialsAvatar from "../../components/common/ui/InitialsAvatar";
 
 const kanbanColumns = [
   { id: "Applied",  title: "Applied",   color: "bg-gray-50",   borderColor: "border-gray-300" },

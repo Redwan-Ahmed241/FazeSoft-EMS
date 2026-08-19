@@ -1,25 +1,25 @@
 import { createBrowserRouter } from "react-router";
-import { Layout } from "./components/Layout";
-import { Dashboard } from "./components/Dashboard";
-import { Report } from "./components/Report";
-import { Employees } from "./components/Employees";
-import { JobPosting } from "./components/JobPosting";
-import { Candidate } from "./components/Candidate";
-import { CalendarPage } from "./components/CalendarPage";
-import { ResumeParsing } from "./components/ResumeParsing";
-import { Profile } from "./components/Profile";
-import { Settings } from "./components/Settings";
-import { ProtectedRoute } from "./components/ProtectedRoute";
-import { SharedProvider } from "./components/SharedContext";
-import Login from "./components/login";
-import Signup from "./components/signup";
-import { PortalCareer } from "./components/PortalCareer";
+import { Layout } from "./components/layout/Layout";
+import { Dashboard } from "./pages/dashboard/Dashboard";
+import { Report } from "./pages/dashboard/Report";
+import { Employees } from "./pages/employees/Employees";
+import { JobPosting } from "./pages/projects/JobPosting";
+import { Candidate } from "./pages/candidates/Candidate";
+import { CalendarPage } from "./pages/interviews/CalendarPage";
+import { ResumeParsing } from "./pages/candidates/ResumeParsing";
+import { Profile } from "./pages/profile/Profile";
+import { Settings } from "./pages/settings/Settings";
+import { ProtectedRoute } from "./components/common/ProtectedRoute";
+import { SharedProvider } from "./context/SharedContext";
+import Login from "./pages/auth/login";
+import Signup from "./pages/auth/signup";
+import { PortalCareer } from "./pages/career/PortalCareer";
 import { PortalAuthProvider } from "./context/PortalAuthContext";
 import { PortalProvider } from "./context/PortalContext";
-import { EmployeeDashboard } from "./components/employee/EmployeeDashboard";
-import { MyTasks } from "./components/employee/MyTasks";
-import { TeamProgress } from "./components/employee/TeamProgress";
-import { History } from "./components/employee/History";
+import { EmployeeDashboard } from "./pages/employees/EmployeeDashboard";
+import { MyTasks } from "./pages/employees/MyTasks";
+import { TeamProgress } from "./pages/employees/TeamProgress";
+import { History } from "./pages/employees/History";
 
 export const router = createBrowserRouter([
   {

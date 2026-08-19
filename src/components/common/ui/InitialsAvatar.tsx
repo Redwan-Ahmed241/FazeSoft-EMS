@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import { getInitials, getAvatarColor } from "../../utils/getInitials";
+import { getInitials, getAvatarColor } from "../../../utils/getInitials";
 
 interface InitialsAvatarProps {
   name: string;

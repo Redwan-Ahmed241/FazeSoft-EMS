@@ -9,8 +9,8 @@ import {
   AlertTriangle,
 } from "lucide-react";
 import { useAuth } from "../../context/AuthContext";
-import { useSharedContext, TaskStatus } from "../SharedContext";
-import { Progress } from "../ui/progress";
+import { useSharedContext, TaskStatus } from "../../context/SharedContext";
+import { Progress } from "../../components/common/ui/progress";
 import { toast } from "sonner@2.0.3";
 import {
   PRIORITY_BADGE,
@@ -19,7 +19,7 @@ import {
   dueLabel,
   formatDate,
   isOverdue,
-} from "./taskUtils";
+} from "../../utils/taskUtils";
 
 const COLUMNS: Array<{ status: TaskStatus; title: string; icon: React.ElementType; accent: string; dot: string }> = [
   { status: "assigned", title: "Assigned", icon: ListTodo, accent: "bg-amber-100 text-amber-700", dot: "bg-amber-400" },

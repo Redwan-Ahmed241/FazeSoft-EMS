@@ -1,9 +1,9 @@
 import { useState, useEffect } from "react";
 import { Camera, Mail, Phone, MapPin, Briefcase, Calendar, Shield, Key, Bell, Loader2 } from "lucide-react";
-import { useAuth } from "../context/AuthContext";
-import { useSharedContext } from "./SharedContext";
+import { useAuth } from "../../context/AuthContext";
+import { useSharedContext } from "../../context/SharedContext";
 import { toast } from "sonner";
-import InitialsAvatar from "./ui/InitialsAvatar";
+import InitialsAvatar from "../../components/common/ui/InitialsAvatar";
 
 export function Profile() {
   const { user, updateProfile } = useAuth();

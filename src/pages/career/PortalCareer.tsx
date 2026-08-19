@@ -5,8 +5,8 @@ import {
   Phone, Upload, X, ChevronDown, LogOut, FileText, CheckCircle2, 
   AlertCircle, Building2, Crosshair, ArrowRight, Send, Globe
 } from 'lucide-react';
-import { usePortalAuth } from '../context/PortalAuthContext';
-import { usePortal } from '../context/PortalContext';
+import { usePortalAuth } from '../../context/PortalAuthContext';
+import { usePortal } from '../../context/PortalContext';
 import './PortalCareer.css';
 
 // Department color mapping

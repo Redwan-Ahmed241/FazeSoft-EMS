@@ -2,7 +2,7 @@ import { useState, FormEvent, ChangeEvent } from 'react';
 import { Link, useNavigate } from 'react-router';
 import { motion } from 'motion/react';
 import { Circle, Eye, EyeOff, Shield, ClipboardList, Mail, ArrowLeft } from 'lucide-react';
-import { useAuth, type UserRole } from '../context/AuthContext';
+import { useAuth, type UserRole } from '../../context/AuthContext';
 
 // ── Reusable Components ───────────────────────────────────────
 

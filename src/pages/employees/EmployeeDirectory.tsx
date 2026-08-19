@@ -1,18 +1,18 @@
 import { useState } from 'react';
 import { Search, Filter, Plus, Mail, Phone, MapPin, MoreHorizontal } from 'lucide-react';
-import { Card, CardContent, CardHeader, CardTitle } from './ui/card';
-import { Button } from './ui/button';
-import { Input } from './ui/input';
-import { Avatar, AvatarFallback, AvatarImage } from './ui/avatar';
-import { Badge } from './ui/badge';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from './ui/select';
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from './ui/dialog';
+import { Card, CardContent, CardHeader, CardTitle } from '../../components/common/ui/card';
+import { Button } from '../../components/common/ui/button';
+import { Input } from '../../components/common/ui/input';
+import { Avatar, AvatarFallback, AvatarImage } from '../../components/common/ui/avatar';
+import { Badge } from '../../components/common/ui/badge';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '../../components/common/ui/select';
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from '../../components/common/ui/dialog';
 import { 
   DropdownMenu, 
   DropdownMenuContent, 
   DropdownMenuItem, 
   DropdownMenuTrigger 
-} from './ui/dropdown-menu';
+} from '../../components/common/ui/dropdown-menu';
 
 const employees = [
   {

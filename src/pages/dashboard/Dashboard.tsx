@@ -1,6 +1,6 @@
 import { useState, useEffect } from "react";
 import { Link, useNavigate } from "react-router";
-import InitialsAvatar from "./ui/InitialsAvatar";
+import InitialsAvatar from "../../components/common/ui/InitialsAvatar";
 import {
   TrendingUp, TrendingDown, Users, Eye, UserPlus, UserMinus,
   UserCheck, Video, RefreshCw, SlidersHorizontal,
@@ -9,9 +9,9 @@ import {
 } from "lucide-react";
 import { BarChart, Bar, XAxis, YAxis, ResponsiveContainer, Cell } from "recharts";
 import { toast } from "sonner@2.0.3";
-import { useAuth } from "../context/AuthContext";
-import { useSharedContext } from "./SharedContext";
-import { EmployeeDashboard } from "./employee/EmployeeDashboard";
+import { useAuth } from "../../context/AuthContext";
+import { useSharedContext } from "../../context/SharedContext";
+import { EmployeeDashboard } from "../employees/EmployeeDashboard";
 
 // ─── Static HR Data ────────────────────────────────────────────────────────────
 

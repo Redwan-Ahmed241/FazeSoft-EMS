@@ -9,9 +9,9 @@ import {
   Award,
 } from "lucide-react";
 import { useAuth } from "../../context/AuthContext";
-import { useSharedContext } from "../SharedContext";
-import InitialsAvatar from "../ui/InitialsAvatar";
-import { Progress } from "../ui/progress";
+import { useSharedContext } from "../../context/SharedContext";
+import InitialsAvatar from "../../components/common/ui/InitialsAvatar";
+import { Progress } from "../../components/common/ui/progress";
 
 export function TeamProgress() {
   const { user } = useAuth();

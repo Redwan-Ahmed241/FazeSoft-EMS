@@ -1,7 +1,7 @@
 import { useState } from "react";
 import { Plus, Edit, Archive, Eye, Share2, Sparkles, Linkedin, Facebook, Twitter, Globe, Trash2, X, Copy, Check, AlertTriangle, Link2, Mail } from "lucide-react";
 import { toast } from "sonner@2.0.3";
-import { useSharedContext, type JobPost } from "./SharedContext";
+import { useSharedContext, type JobPost } from "../../context/SharedContext";
 
 export function JobPosting() {
   const { jobs, addJob, updateJob, deleteJob } = useSharedContext();

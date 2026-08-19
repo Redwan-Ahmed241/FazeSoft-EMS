@@ -1,4 +1,5 @@
 import React, { createContext, useContext, useState, useEffect, ReactNode } from 'react';
+import { authApi } from '../api/auth';
 
 export type UserRole = 'hr' | 'candidate' | 'admin' | 'employee';
 
@@ -51,27 +52,9 @@ const AuthContext = createContext<AuthContextType | undefined>(undefined);
 // ─────────────────────────────────────────────────────────────
 const USE_SUPABASE = !!import.meta.env.VITE_SUPABASE_URL;
 
-// FastAPI backend base URL (used for employee login / account creation)
-const API_BASE_URL = import.meta.env.VITE_API_URL || 'http://localhost:8000/api';
-
 // ── Backend (FastAPI) Auth — used for employees ──────────────
 async function backendLogin(email: string, password: string): Promise<User> {
-  const response = await fetch(`${API_BASE_URL}/auth/login`, {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({ email, password }),
-  });
-
-  if (!response.ok) {
-    let detail = 'Incorrect email or password.';
-    try {
-      const data = await response.json();
-      detail = data?.detail || detail;
-    } catch { /* keep default */ }
-    throw new Error(detail);
-  }
-
-  const data = await response.json();
+  const data = await authApi.login({ email, password });
   // Store the JWT so apiClient/backend calls are authenticated
   localStorage.setItem('token', data.access_token);
 

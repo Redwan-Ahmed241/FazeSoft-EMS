@@ -1,10 +1,10 @@
 import { useState } from "react";
-import { useSharedContext } from "./SharedContext";
+import { useSharedContext } from "../../context/SharedContext";
 import { Link, Outlet, useLocation } from "react-router";
-import InitialsAvatar from "./ui/InitialsAvatar";
+import InitialsAvatar from "../common/ui/InitialsAvatar";
 import { Toaster } from "sonner";
-import Frame35 from "../imports/Frame35";
-import { useAuth } from "../context/AuthContext";
+import Frame35 from "../common/Frame35";
+import { useAuth } from "../../context/AuthContext";
 import {
   LayoutDashboard,
   Users,

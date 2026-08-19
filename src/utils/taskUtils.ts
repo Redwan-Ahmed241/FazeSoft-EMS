@@ -1,4 +1,4 @@
-import type { TaskData, TaskPriority, TaskStatus } from "../SharedContext";
+import type { TaskData, TaskPriority, TaskStatus } from "../context/SharedContext";
 
 export const STATUS_ORDER: TaskStatus[] = ["assigned", "in_progress", "completed"];
 

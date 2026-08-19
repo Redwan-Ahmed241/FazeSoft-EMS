@@ -1,12 +1,12 @@
 import { useState } from 'react';
 import { TrendingUp, TrendingDown, Target, Award, Calendar, User } from 'lucide-react';
-import { Card, CardContent, CardHeader, CardTitle } from './ui/card';
-import { Button } from './ui/button';
-import { Badge } from './ui/badge';
-import { Avatar, AvatarFallback, AvatarImage } from './ui/avatar';
-import { Progress } from './ui/progress';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from './ui/select';
-import { Tabs, TabsContent, TabsList, TabsTrigger } from './ui/tabs';
+import { Card, CardContent, CardHeader, CardTitle } from '../../components/common/ui/card';
+import { Button } from '../../components/common/ui/button';
+import { Badge } from '../../components/common/ui/badge';
+import { Avatar, AvatarFallback, AvatarImage } from '../../components/common/ui/avatar';
+import { Progress } from '../../components/common/ui/progress';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '../../components/common/ui/select';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '../../components/common/ui/tabs';
 
 const performanceData = [
   {

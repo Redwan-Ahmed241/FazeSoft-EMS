@@ -11,8 +11,8 @@ import {
   User,
 } from "lucide-react";
 import { useAuth } from "../../context/AuthContext";
-import { useSharedContext } from "../SharedContext";
-import { formatDate } from "./taskUtils";
+import { useSharedContext } from "../../context/SharedContext";
+import { formatDate } from "../../utils/taskUtils";
 
 export function History() {
   const { user } = useAuth();

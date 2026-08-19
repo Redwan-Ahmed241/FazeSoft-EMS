@@ -1,4 +1,4 @@
-import svgPaths from "./svg-nubmbundb";
+import svgPaths from "../../assets/svg-nubmbundb";
 
 export default function Frame() {
   return (

@@ -1,6 +1,6 @@
 import { Download, TrendingUp, Users, Clock, Target } from "lucide-react";
 import { LineChart, Line, BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, Legend } from "recharts";
-import { useSharedContext } from "./SharedContext";
+import { useSharedContext } from "../../context/SharedContext";
 
 export function Report() {
   const { candidates, interviews } = useSharedContext();

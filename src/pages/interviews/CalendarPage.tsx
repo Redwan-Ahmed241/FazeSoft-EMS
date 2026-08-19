@@ -1,9 +1,9 @@
 import { useState } from "react";
 import { ChevronLeft, ChevronRight, Plus, Video, Clock, User, Calendar as CalendarIcon, Trash2 } from "lucide-react";
 import { toast } from "sonner@2.0.3";
-import { useSharedContext, type InterviewData } from "./SharedContext";
-import { useAuth } from "../context/AuthContext";
-import InitialsAvatar from "./ui/InitialsAvatar";
+import { useSharedContext, type InterviewData } from "../../context/SharedContext";
+import { useAuth } from "../../context/AuthContext";
+import InitialsAvatar from "../../components/common/ui/InitialsAvatar";
 
 const daysOfWeek = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"];
 const monthNames = [
