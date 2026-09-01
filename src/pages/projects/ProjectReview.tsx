@@ -385,14 +385,14 @@ export function ProjectReview() {
           {creating ? (
             <>
               <Loader2 className="w-4 h-4 animate-spin" />{" "}
-              {isExistingProjectMode ? "Creating Team..." : hasTeam ? "Creating Project &amp; Team..." : "Creating Project..."}
+              {isExistingProjectMode ? "Creating Team..." : hasTeam ? "Creating Project & Team..." : "Creating Project..."}
             </>
           ) : (
             <>
               {isExistingProjectMode
-                ? "Create &amp; Assign Team"
+                ? "Create & Assign Team"
                 : hasTeam
-                  ? "Create Project &amp; Team"
+                  ? "Create Project & Team"
                   : "Create Project"}{" "}
               <CheckCircle2 className="w-4 h-4" />
             </>

@@ -85,10 +85,24 @@ export function Layout() {
   });
 
   const isActive = (path: string) => {
-    if (path === "/dashboard") {
-      return location.pathname === "/dashboard" || location.pathname === "/dashboard/";
+    const current = location.pathname.replace(/\/+$/, "") || "/";
+    const target = path.replace(/\/+$/, "") || "/";
+
+    if (target === "/dashboard") {
+      return current === "/dashboard";
     }
-    return location.pathname.startsWith(path);
+
+    const matchesTarget = current === target || current.startsWith(target + "/");
+    if (!matchesTarget) return false;
+
+    // Avoid highlighting parent/prefix paths if a more specific menu item matches
+    const hasMoreSpecificMatch = menuItems.some((other) => {
+      const otherTarget = other.path.replace(/\/+$/, "") || "/";
+      if (otherTarget === target || otherTarget.length <= target.length) return false;
+      return current === otherTarget || current.startsWith(otherTarget + "/");
+    });
+
+    return !hasMoreSpecificMatch;
   };
 
   return (

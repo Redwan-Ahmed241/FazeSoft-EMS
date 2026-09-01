@@ -184,7 +184,16 @@ export function CreateTeam() {
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
 
-    if (!canContinue) {
+    if (!teamName.trim()) {
+      toast.error("Please enter a Team Name");
+      return;
+    }
+    if (!description.trim()) {
+      toast.error("Please enter a Team Description");
+      return;
+    }
+    if (selectedMembers.size === 0) {
+      toast.error("Please select at least one team member");
       return;
     }
 
@@ -225,12 +234,12 @@ export function CreateTeam() {
       <div className="bg-card border border-border rounded-2xl p-6 shadow-sm">
         <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
           <div className="flex items-center gap-3">
-            <div className="w-12 h-12 rounded-xl bg-purple-500/10 text-purple-600 flex items-center justify-center font-bold text-xl shadow-inner">
-              <Users className="w-6 h-6 text-purple-600" />
+            <div className="w-12 h-12 rounded-xl bg-primary/10 text-primary flex items-center justify-center font-bold text-xl shadow-inner">
+              <Users className="w-6 h-6 text-primary" />
             </div>
             <div>
               <div className="flex items-center gap-2">
-                <span className="text-xs font-semibold uppercase tracking-wider px-2.5 py-0.5 rounded-full bg-purple-100 dark:bg-purple-950/50 text-purple-700 dark:text-purple-300">
+                <span className="text-xs font-semibold uppercase tracking-wider px-2.5 py-0.5 rounded-full bg-primary/10 text-primary">
                   {existingProjectMode ? "Team Setup" : "Step 2 of 3"}
                 </span>
                 <span className="text-xs text-muted-foreground flex items-center gap-1">
@@ -238,7 +247,7 @@ export function CreateTeam() {
                 </span>
               </div>
               <h1 className="text-2xl font-bold text-foreground mt-0.5">
-                {existingProjectMode ? "Add Team to Project" : "Create Team &amp; Assign Members"}
+                {existingProjectMode ? "Add Team to Project" : "Create Team & Assign Members"}
               </h1>
               <p className="text-xs font-medium text-muted-foreground mt-0.5">
                 Project:{" "}
@@ -295,7 +304,7 @@ export function CreateTeam() {
               value={teamName}
               onChange={(e) => setTeamName(e.target.value)}
               required
-              className="w-full px-4 py-2.5 rounded-xl border border-input bg-background text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-purple-500/20 focus:border-purple-500 transition"
+              className="w-full px-4 py-2.5 rounded-xl border border-input bg-background text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary transition"
             />
           </div>
 
@@ -309,7 +318,7 @@ export function CreateTeam() {
               value={description}
               onChange={(e) => setDescription(e.target.value)}
               required
-              className="w-full px-4 py-3 rounded-xl border border-input bg-background text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-purple-500/20 focus:border-purple-500 transition resize-y"
+              className="w-full px-4 py-3 rounded-xl border border-input bg-background text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary transition resize-y"
             />
           </div>
         </div>
@@ -475,14 +484,14 @@ export function CreateTeam() {
               Skip For Now
             </button>
 
-            {hasSelectedMembers && (
-              <button
-                type="submit"
-                className="flex items-center gap-2 px-6 py-2.5 rounded-xl bg-purple-600 text-white font-semibold shadow-md hover:bg-purple-700 transition cursor-pointer"
-              >
-                Continue to Review <ArrowRight className="w-4 h-4" />
-              </button>
-            )}
+            <button
+              type="submit"
+              disabled={!hasSelectedMembers}
+              className="flex items-center gap-2 px-6 py-2.5 rounded-xl bg-primary text-primary-foreground font-semibold shadow-md hover:bg-primary/90 transition disabled:opacity-50 disabled:cursor-not-allowed cursor-pointer"
+            >
+              {existingProjectMode ? "Assign & Review Team" : "Continue to Review"}{" "}
+              <ArrowRight className="w-4 h-4" />
+            </button>
           </div>
         </div>
       </form>
