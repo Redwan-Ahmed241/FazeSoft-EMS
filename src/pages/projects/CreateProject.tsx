@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from "react";
-import { useNavigate } from "react-router";
+import { useNavigate, useLocation } from "react-router";
 import { 
   FolderPlus, 
   ArrowRight, 
@@ -19,19 +19,29 @@ import type { ClientOut } from "../../types/client";
 
 export function CreateProject() {
   const navigate = useNavigate();
+  const location = useLocation();
   const { user } = useAuth();
+
+  const draft = (location.state ?? {}) as {
+    projectName?: string;
+    projectCode?: string;
+    description?: string;
+    startDate?: string;
+    endDate?: string;
+    clientId?: string;
+  };
 
   const [loading, setLoading] = useState(false);
   const [fetchingClients, setFetchingClients] = useState(true);
   const [clients, setClients] = useState<ClientOut[]>([]);
 
-  // Form fields
-  const [projectName, setProjectName] = useState("");
-  const [projectCode, setProjectCode] = useState("");
-  const [description, setDescription] = useState("");
-  const [startDate, setStartDate] = useState("");
-  const [endDate, setEndDate] = useState("");
-  const [clientId, setClientId] = useState("");
+  // Form fields — prefilled from draft state when returning from Step 2
+  const [projectName, setProjectName] = useState(draft.projectName ?? "");
+  const [projectCode, setProjectCode] = useState(draft.projectCode ?? "");
+  const [description, setDescription] = useState(draft.description ?? "");
+  const [startDate, setStartDate] = useState(draft.startDate ?? "");
+  const [endDate, setEndDate] = useState(draft.endDate ?? "");
+  const [clientId, setClientId] = useState(draft.clientId ?? "");
 
   // Load clients list on mount
   useEffect(() => {
@@ -40,7 +50,7 @@ export function CreateProject() {
         setFetchingClients(true);
         const data = await clientsApi.list();
         setClients(data || []);
-        if (data && data.length > 0) {
+        if (data && data.length > 0 && !clientId) {
           setClientId(data[0].client_id);
         }
       } catch (err: unknown) {
@@ -114,7 +124,14 @@ export function CreateProject() {
 
       // Redirect to Step 2 with project_id in URL and pass project name in state
       navigate(`/dashboard/projects/${res.project_id}/create-team`, {
-        state: { projectName: res.project_name, projectCode: res.project_code },
+        state: {
+          projectName: res.project_name,
+          projectCode: res.project_code,
+          description,
+          startDate,
+          endDate,
+          clientId,
+        },
       });
     } catch (err: unknown) {
       console.error("Create project error:", err);

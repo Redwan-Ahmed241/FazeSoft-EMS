@@ -463,16 +463,27 @@ export function CreateTeam() {
         </div>
 
         {/* Action Buttons */}
-        <div className="pt-6 border-t border-border flex items-center justify-between">
+        <div className="pt-6 border-t border-border flex flex-wrap items-center justify-between gap-3">
           <button
             type="button"
-            onClick={() => navigate(`/dashboard/projects/create`)}
+            onClick={() =>
+              navigate(`/dashboard/projects/create`, {
+                state: {
+                  projectName: (location.state as any)?.projectName,
+                  projectCode: (location.state as any)?.projectCode,
+                  description: (location.state as any)?.description,
+                  startDate: (location.state as any)?.startDate,
+                  endDate: (location.state as any)?.endDate,
+                  clientId: (location.state as any)?.clientId,
+                },
+              })
+            }
             className="flex items-center gap-2 px-4 py-2.5 rounded-xl border border-border text-foreground hover:bg-muted font-medium transition cursor-pointer"
           >
             <ArrowLeft className="w-4 h-4" /> Back to Project
           </button>
 
-          <div className="flex items-center gap-3">
+          <div className="flex items-center gap-3 flex-wrap">
             <button
               type="button"
               onClick={() => navigate(`/dashboard/projects/${projectId}`)}
