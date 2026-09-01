@@ -9,13 +9,13 @@ import type {
 
 export const teamApi = {
   // Team CRUD
-  createTeam: (data: TeamCreate) => apiClient.post<TeamWithMembersOut>("/teams", data),
-  listTeams: () => apiClient.get<TeamWithMembersOut[]>("/teams"),
-  getTeam: (teamId: string) => apiClient.get<TeamWithMembersOut>(`/teams/${teamId}`),
+  createTeam: (data: TeamCreate) => apiClient.post<TeamWithMembersOut>("/v1/teams", data),
+  listTeams: () => apiClient.get<TeamWithMembersOut[]>("/v1/teams"),
+  getTeam: (teamId: string) => apiClient.get<TeamWithMembersOut>(`/v1/teams/${teamId}`),
 
   // Project Teams
   assignTeamToProject: (projectId: string, payload: ProjectTeamAssign) =>
-    apiClient.post<ProjectTeamsOut>(`/projects/${projectId}/teams`, payload),
+    apiClient.post<ProjectTeamsOut>(`/v1/projects/${projectId}/teams`, payload),
   getProjectTeams: (projectId: string) =>
-    apiClient.get<TeamWithMembersOut[]>(`/projects/${projectId}/teams`),
+    apiClient.get<TeamWithMembersOut[]>(`/v1/projects/${projectId}/teams`),
 };

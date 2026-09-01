@@ -4,6 +4,7 @@ import type { ProjectCreate, ProjectListOut, ProjectOut } from "../types/project
 
 export const projectApi = {
   create: (data: ProjectCreate) => apiClient.post<ProjectOut>("/projects", data),
+  update: (id: string, data: ProjectCreate) => apiClient.put<ProjectOut>(`/projects/${id}`, data),
   list: () => apiClient.get<ProjectListOut[]>("/projects"),
   get: (id: string) => apiClient.get<ProjectOut>(`/projects/${id}`),
 };

@@ -23,6 +23,14 @@ export function CreateProject() {
   const { user } = useAuth();
 
   const draft = (location.state ?? {}) as {
+    projectDraft?: {
+      project_name?: string;
+      project_code?: string;
+      description?: string;
+      start_date?: string;
+      end_date?: string;
+      client_id?: string;
+    };
     projectName?: string;
     projectCode?: string;
     description?: string;
@@ -31,17 +39,26 @@ export function CreateProject() {
     clientId?: string;
   };
 
+  const initialDraft = draft.projectDraft || {
+    project_name: draft.projectName,
+    project_code: draft.projectCode,
+    description: draft.description,
+    start_date: draft.startDate,
+    end_date: draft.endDate,
+    client_id: draft.clientId,
+  };
+
   const [loading, setLoading] = useState(false);
   const [fetchingClients, setFetchingClients] = useState(true);
   const [clients, setClients] = useState<ClientOut[]>([]);
 
   // Form fields — prefilled from draft state when returning from Step 2
-  const [projectName, setProjectName] = useState(draft.projectName ?? "");
-  const [projectCode, setProjectCode] = useState(draft.projectCode ?? "");
-  const [description, setDescription] = useState(draft.description ?? "");
-  const [startDate, setStartDate] = useState(draft.startDate ?? "");
-  const [endDate, setEndDate] = useState(draft.endDate ?? "");
-  const [clientId, setClientId] = useState(draft.clientId ?? "");
+  const [projectName, setProjectName] = useState(initialDraft.project_name ?? "");
+  const [projectCode, setProjectCode] = useState(initialDraft.project_code ?? "");
+  const [description, setDescription] = useState(initialDraft.description ?? "");
+  const [startDate, setStartDate] = useState(initialDraft.start_date ?? "");
+  const [endDate, setEndDate] = useState(initialDraft.end_date ?? "");
+  const [clientId, setClientId] = useState(initialDraft.client_id ?? "");
 
   // Load clients list on mount
   useEffect(() => {
@@ -79,7 +96,7 @@ export function CreateProject() {
     }
   };
 
-  const handleSubmit = async (e: React.FormEvent) => {
+  const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
 
     if (!projectName.trim()) {
@@ -107,39 +124,22 @@ export function CreateProject() {
       return;
     }
 
-    try {
-      setLoading(true);
-      const res = await projectApi.create({
-        project_name: projectName.trim(),
-        project_code: projectCode.trim().toUpperCase(),
-        description: description.trim(),
-        client_id: clientId,
-        start_date: startDate,
-        end_date: endDate,
-      });
+    const projectDraft = {
+      project_name: projectName.trim(),
+      project_code: projectCode.trim().toUpperCase(),
+      description: description.trim(),
+      client_id: clientId,
+      start_date: startDate,
+      end_date: endDate,
+    };
 
-      toast.success("Project created successfully!", {
-        description: `Moving to Step 2: Assemble team for ${res.project_name}`,
-      });
-
-      // Redirect to Step 2 with project_id in URL and pass project name in state
-      navigate(`/dashboard/projects/${res.project_id}/create-team`, {
-        state: {
-          projectName: res.project_name,
-          projectCode: res.project_code,
-          description,
-          startDate,
-          endDate,
-          clientId,
-        },
-      });
-    } catch (err: unknown) {
-      console.error("Create project error:", err);
-      const msg = err instanceof Error ? err.message : "Failed to create project.";
-      toast.error(msg);
-    } finally {
-      setLoading(false);
-    }
+    // Simply move to Step 2 with draft in state — no DB write until Step 2 confirmation
+    navigate(`/dashboard/projects/create-team`, {
+      state: {
+        projectDraft,
+        clientName: clients.find((c) => c.client_id === clientId)?.client_name || "",
+      },
+    });
   };
 
   return (
@@ -338,11 +338,11 @@ export function CreateProject() {
           >
             {loading ? (
               <>
-                <Loader2 className="w-4 h-4 animate-spin" /> Creating Project...
+                <Loader2 className="w-4 h-4 animate-spin" /> Moving to Team Setup...
               </>
             ) : (
               <>
-                Create Project <ArrowRight className="w-4 h-4" />
+                Move to Team Setup <ArrowRight className="w-4 h-4" />
               </>
             )}
           </button>

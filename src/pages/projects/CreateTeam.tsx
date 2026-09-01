@@ -32,11 +32,43 @@ interface MemberSelection {
   role: TeamMemberRole;
 }
 
+interface ProjectDraft {
+  project_name: string;
+  project_code: string;
+  description: string;
+  client_id: string;
+  start_date: string;
+  end_date: string;
+}
+
 export function CreateTeam() {
   const { projectId } = useParams<{ projectId: string }>();
   const navigate = useNavigate();
   const location = useLocation();
   const { employees } = useSharedContext();
+
+  const locationDraft = (location.state as any)?.projectDraft as ProjectDraft | undefined;
+  const legacyDraft = location.state as {
+    projectName?: string;
+    projectCode?: string;
+    description?: string;
+    startDate?: string;
+    endDate?: string;
+    clientId?: string;
+  } | undefined;
+
+  const projectDraft: ProjectDraft | undefined =
+    locationDraft ||
+    (legacyDraft?.projectName && legacyDraft?.projectCode && legacyDraft?.clientId
+      ? {
+          project_name: legacyDraft.projectName,
+          project_code: legacyDraft.projectCode,
+          description: legacyDraft.description || "",
+          start_date: legacyDraft.startDate || "",
+          end_date: legacyDraft.endDate || "",
+          client_id: legacyDraft.clientId,
+        }
+      : undefined);
 
   const [project, setProject] = useState<ProjectOut | null>(null);
   const [loadingProject, setLoadingProject] = useState(true);
@@ -55,37 +87,49 @@ export function CreateTeam() {
   // Project details loading
   useEffect(() => {
     async function fetchProject() {
-      if (!projectId) return;
-      try {
-        setLoadingProject(true);
-        const data = await projectApi.get(projectId);
-        setProject(data);
-      } catch (err: unknown) {
-        console.error("Failed to load project details:", err);
-        // If passed from location state fallback
-        if (location.state?.projectName) {
-          setProject({
-            project_id: projectId,
-            project_name: location.state.projectName,
-            project_code: location.state.projectCode || "",
-            description: "",
-            status: "In Progress",
-            manager_id: "",
-            client_id: "",
-            start_date: "",
-            end_date: "",
-            created_at: "",
-            updated_at: "",
-          });
-        } else {
+      // Case 1: Draft passed from Step 1 (no DB record yet)
+      if (projectDraft) {
+        setProject({
+          project_id: "",
+          project_name: projectDraft.project_name,
+          project_code: projectDraft.project_code,
+          description: projectDraft.description,
+          status: "In Progress",
+          manager_id: "",
+          client_id: projectDraft.client_id,
+          start_date: projectDraft.start_date,
+          end_date: projectDraft.end_date,
+          created_at: "",
+          updated_at: "",
+        });
+        setTeamName((prev) => prev || `${projectDraft.project_name} Squad`);
+        setDescription((prev) => prev || `Core delivery team for ${projectDraft.project_name}`);
+        setLoadingProject(false);
+        return;
+      }
+
+      // Case 2: Existing project ID from URL
+      if (projectId) {
+        try {
+          setLoadingProject(true);
+          const data = await projectApi.get(projectId);
+          setProject(data);
+          if (data?.project_name) {
+            setTeamName((prev) => prev || `${data.project_name} Squad`);
+            setDescription((prev) => prev || `Core delivery team for ${data.project_name}`);
+          }
+        } catch (err: unknown) {
+          console.error("Failed to load project details:", err);
           toast.error("Could not fetch project details.");
+        } finally {
+          setLoadingProject(false);
         }
-      } finally {
+      } else {
         setLoadingProject(false);
       }
     }
     fetchProject();
-  }, [projectId, location.state]);
+  }, [projectId, projectDraft]);
 
   // Load available staff/employees from backend auth / sharedContext
   useEffect(() => {
@@ -176,20 +220,61 @@ export function CreateTeam() {
     setSelectedMembers(next);
   };
 
-  // On Submit
+  // Back to Step 1 without saving to DB
+  const handleBackToProject = () => {
+    navigate(`/dashboard/projects/create`, {
+      state: {
+        projectDraft: projectDraft || (project ? {
+          project_name: project.project_name,
+          project_code: project.project_code,
+          description: project.description,
+          client_id: project.client_id,
+          start_date: project.start_date,
+          end_date: project.end_date,
+        } : undefined),
+      },
+    });
+  };
+
+  // Skip team assignment and create project only (or navigate to existing project)
+  const handleSkipForNow = async () => {
+    if (projectDraft) {
+      try {
+        setSubmitting(true);
+        const createdProject = await projectApi.create(projectDraft);
+        toast.success("Project created successfully!", {
+          description: `${createdProject.project_name} has been initialized without an assigned team.`,
+        });
+        navigate(`/dashboard/projects/${createdProject.project_id}`);
+      } catch (err: unknown) {
+        console.error("Project creation failed:", err);
+        const msg = err instanceof Error ? err.message : "Failed to create project.";
+        toast.error(msg);
+      } finally {
+        setSubmitting(false);
+      }
+    } else if (projectId) {
+      navigate(`/dashboard/projects/${projectId}`);
+    } else {
+      navigate(`/dashboard/projects/create`);
+    }
+  };
+
+  // On Submit: Create project (if draft) & create team & assign team
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
 
-    if (!projectId) {
-      toast.error("Project ID is missing.");
+    if (!projectDraft && !projectId) {
+      toast.error("Project information is missing. Please start from Step 1.");
+      navigate("/dashboard/projects/create");
       return;
     }
-    if (!teamName.trim()) {
-      toast.error("Please enter a Team Name.");
-      return;
-    }
-    if (!description.trim()) {
-      toast.error("Please enter a Team Description.");
+
+    const resolvedTeamName = teamName.trim() || `${project?.project_name || "Project"} Squad`;
+    const resolvedDescription = description.trim() || `Core delivery team for ${project?.project_name || "Project"}`;
+
+    if (selectedMembers.size === 0) {
+      toast.error("Please select at least one employee to assign, or click 'Skip For Now'.");
       return;
     }
 
@@ -202,27 +287,39 @@ export function CreateTeam() {
         role: m.role,
       }));
 
-      // 1. Create team with members
+      let targetProjectId = projectId;
+
+      // 1. If project hasn't been created in DB yet, create it now
+      if (projectDraft) {
+        const createdProject = await projectApi.create(projectDraft);
+        targetProjectId = createdProject.project_id;
+      }
+
+      if (!targetProjectId) {
+        throw new Error("Failed to resolve project ID for team assignment.");
+      }
+
+      // 2. Create team with members
       const createdTeam = await teamApi.createTeam({
-        team_name: teamName.trim(),
-        description: description.trim(),
+        team_name: resolvedTeamName,
+        description: resolvedDescription,
         members: membersPayload,
       });
 
-      // 2. Assign created team to project
-      await teamApi.assignTeamToProject(projectId, {
+      // 3. Assign created team to project
+      await teamApi.assignTeamToProject(targetProjectId, {
         team_id: createdTeam.team_id,
       });
 
-      toast.success("Team created and assigned to project!", {
+      toast.success(projectDraft ? "Project created & team assigned successfully!" : "Team assigned to project successfully!", {
         description: `${createdTeam.team_name} with ${membersPayload.length} member(s).`,
       });
 
-      // 3. Navigate to Project Detail page
-      navigate(`/dashboard/projects/${projectId}`);
+      // 4. Navigate to Project Detail page
+      navigate(`/dashboard/projects/${targetProjectId}`);
     } catch (err: unknown) {
-      console.error("Team creation failed:", err);
-      const msg = err instanceof Error ? err.message : "Failed to create team.";
+      console.error("Assignment failed:", err);
+      const msg = err instanceof Error ? err.message : "Failed to assign team.";
       toast.error(msg);
     } finally {
       setSubmitting(false);
@@ -463,50 +560,43 @@ export function CreateTeam() {
         </div>
 
         {/* Action Buttons */}
-        <div className="pt-6 border-t border-border flex flex-wrap items-center justify-between gap-3">
-          <button
-            type="button"
-            onClick={() =>
-              navigate(`/dashboard/projects/create`, {
-                state: {
-                  projectName: (location.state as any)?.projectName,
-                  projectCode: (location.state as any)?.projectCode,
-                  description: (location.state as any)?.description,
-                  startDate: (location.state as any)?.startDate,
-                  endDate: (location.state as any)?.endDate,
-                  clientId: (location.state as any)?.clientId,
-                },
-              })
-            }
-            className="flex items-center gap-2 px-4 py-2.5 rounded-xl border border-border text-foreground hover:bg-muted font-medium transition cursor-pointer"
-          >
-            <ArrowLeft className="w-4 h-4" /> Back to Project
-          </button>
-
-          <div className="flex items-center gap-3 flex-wrap">
+        <div className="pt-6 border-t border-border space-y-4">
+          <div className="flex items-center justify-between gap-3">
             <button
               type="button"
-              onClick={() => navigate(`/dashboard/projects/${projectId}`)}
-              className="px-4 py-2.5 rounded-xl border border-border text-muted-foreground hover:text-foreground font-medium transition cursor-pointer"
+              onClick={handleBackToProject}
+              className="flex items-center gap-2 px-4 py-2.5 rounded-xl border border-border text-foreground hover:bg-muted font-medium transition cursor-pointer"
+            >
+              <ArrowLeft className="w-4 h-4" /> Back to Project
+            </button>
+
+            <button
+              type="button"
+              disabled={submitting}
+              onClick={handleSkipForNow}
+              className="px-4 py-2.5 rounded-xl border border-border text-muted-foreground hover:text-foreground font-medium transition cursor-pointer disabled:opacity-50"
             >
               Skip For Now
             </button>
+          </div>
+
+          {selectedMembers.size > 0 && (
             <button
               type="submit"
               disabled={submitting}
-              className="flex items-center gap-2 px-6 py-2.5 rounded-xl bg-purple-600 text-white font-semibold shadow-md hover:bg-purple-700 transition disabled:opacity-50 disabled:cursor-not-allowed cursor-pointer"
+              className="w-full flex items-center justify-center gap-2 px-6 py-3 rounded-xl bg-primary text-primary-foreground font-semibold text-base shadow-lg shadow-primary/25 hover:bg-primary/90 transition disabled:opacity-50 disabled:cursor-not-allowed cursor-pointer"
             >
               {submitting ? (
                 <>
-                  <Loader2 className="w-4 h-4 animate-spin" /> Creating Team...
+                  <Loader2 className="w-5 h-5 animate-spin" /> Assigning Team...
                 </>
               ) : (
                 <>
-                  Create Team <ArrowRight className="w-4 h-4" />
+                  <UserCheck className="w-5 h-5" /> Assign Team ({selectedMembers.size} member{selectedMembers.size !== 1 ? "s" : ""}) <ArrowRight className="w-5 h-5" />
                 </>
               )}
             </button>
-          </div>
+          )}
         </div>
       </form>
     </div>

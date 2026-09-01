@@ -64,6 +64,7 @@ export const router = createBrowserRouter([
       { path: "job-posting", Component: () => <ProtectedRoute allowedRoles={["hr", "admin"]}><JobPosting /></ProtectedRoute> },
       { path: "candidate", Component: () => <ProtectedRoute allowedRoles={["hr", "admin"]}><Candidate /></ProtectedRoute> },
       { path: "projects/create", Component: () => <ProtectedRoute allowedRoles={["hr", "admin"]}><CreateProject /></ProtectedRoute> },
+      { path: "projects/create-team", Component: () => <ProtectedRoute allowedRoles={["hr", "admin"]}><CreateTeam /></ProtectedRoute> },
       { path: "projects/:projectId/create-team", Component: () => <ProtectedRoute allowedRoles={["hr", "admin"]}><CreateTeam /></ProtectedRoute> },
       { path: "projects/:projectId", Component: () => <ProtectedRoute allowedRoles={["hr", "admin"]}><ProjectDetail /></ProtectedRoute> },
       { path: "calendar", Component: CalendarPage },
