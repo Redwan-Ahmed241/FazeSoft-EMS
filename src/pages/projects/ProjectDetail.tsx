@@ -15,6 +15,7 @@ import {
   Sparkles,
   Loader2,
   ShieldCheck,
+  Pencil,
 } from "lucide-react";
 import { toast } from "sonner@2.0.3";
 import { projectApi } from "../../api/projects";
@@ -109,6 +110,12 @@ export function ProjectDetail() {
         </button>
 
         <div className="flex items-center gap-3">
+          <Link
+            to={`/dashboard/projects/${projectId}/edit`}
+            className="flex items-center gap-2 px-4 py-2 rounded-xl bg-primary text-white font-medium text-sm hover:bg-primary/90 transition shadow-xs cursor-pointer"
+          >
+            <Pencil className="w-4 h-4" /> Edit Project
+          </Link>
           <Link
             to={`/dashboard/projects/${projectId}/create-team`}
             className="flex items-center gap-2 px-4 py-2 rounded-xl bg-purple-600 text-white font-medium text-sm hover:bg-purple-700 transition shadow-xs cursor-pointer"

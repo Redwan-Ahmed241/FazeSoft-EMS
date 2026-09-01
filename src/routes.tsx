@@ -25,6 +25,8 @@ import { CreateProject } from "./pages/projects/CreateProject";
 import { CreateTeam } from "./pages/projects/CreateTeam";
 import { ProjectReview } from "./pages/projects/ProjectReview";
 import { ProjectDetail } from "./pages/projects/ProjectDetail";
+import { ProjectList } from "./pages/projects/ProjectList";
+import { EditProject } from "./pages/projects/EditProject";
 
 export const router = createBrowserRouter([
   {
@@ -64,10 +66,12 @@ export const router = createBrowserRouter([
       { path: "employees", Component: () => <ProtectedRoute allowedRoles={["hr", "admin"]}><Employees /></ProtectedRoute> },
       { path: "job-posting", Component: () => <ProtectedRoute allowedRoles={["hr", "admin"]}><JobPosting /></ProtectedRoute> },
       { path: "candidate", Component: () => <ProtectedRoute allowedRoles={["hr", "admin"]}><Candidate /></ProtectedRoute> },
+      { path: "projects", Component: () => <ProtectedRoute allowedRoles={["admin"]}><ProjectList /></ProtectedRoute> },
       { path: "projects/create", Component: () => <ProtectedRoute allowedRoles={["hr", "admin"]}><CreateProject /></ProtectedRoute> },
       { path: "projects/create/team", Component: () => <ProtectedRoute allowedRoles={["hr", "admin"]}><CreateTeam /></ProtectedRoute> },
       { path: "projects/create/review", Component: () => <ProtectedRoute allowedRoles={["hr", "admin"]}><ProjectReview /></ProtectedRoute> },
       { path: "projects/:projectId/create-team", Component: () => <ProtectedRoute allowedRoles={["hr", "admin"]}><CreateTeam /></ProtectedRoute> },
+      { path: "projects/:projectId/edit", Component: () => <ProtectedRoute allowedRoles={["admin"]}><EditProject /></ProtectedRoute> },
       { path: "projects/:projectId", Component: () => <ProtectedRoute allowedRoles={["hr", "admin"]}><ProjectDetail /></ProtectedRoute> },
       { path: "calendar", Component: CalendarPage },
       { path: "resume-parsing", Component: ResumeParsing },

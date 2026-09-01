@@ -18,6 +18,15 @@ export interface ProjectCreate {
   end_date: string;
 }
 
+export interface ProjectUpdate {
+  project_name?: string;
+  project_code?: string;
+  description?: string;
+  client_id?: string;
+  start_date?: string;
+  end_date?: string;
+}
+
 export interface ProjectOut {
   project_id: string;
   project_name: string;

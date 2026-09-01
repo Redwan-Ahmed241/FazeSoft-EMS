@@ -47,6 +47,7 @@ function getNotifIcon(type: string): string {
 
 const allMenuItems = [
   { path: "/dashboard",               icon: LayoutDashboard, label: "Dashboard",  roles: ["hr", "candidate", "admin", "employee"] },
+  { path: "/dashboard/projects",      icon: Briefcase,       label: "Projects",   roles: ["admin"] },
   { path: "/dashboard/projects/create", icon: FolderPlus,    label: "New Project", roles: ["hr", "admin"] },
   { path: "/dashboard/candidate",     icon: UserCheck,       label: "Candidates", roles: ["hr", "admin"] },
   { path: "/dashboard/employees",     icon: Users,           label: "Employees",  roles: ["hr", "admin"] },

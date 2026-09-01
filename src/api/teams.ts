@@ -5,6 +5,7 @@ import type {
   TeamWithMembersOut,
   ProjectTeamsOut,
   ProjectTeamAssign,
+  TeamMemberInput,
 } from "../types/team";
 
 export const teamApi = {
@@ -13,6 +14,8 @@ export const teamApi = {
   listTeams: () => apiClient.get<TeamWithMembersOut[]>("/teams"),
   getTeam: (teamId: string) => apiClient.get<TeamWithMembersOut>(`/teams/${teamId}`),
   removeTeam: (teamId: string) => apiClient.delete(`/teams/${teamId}`),
+  addMembers: (teamId: string, members: TeamMemberInput[]) =>
+    apiClient.post<TeamWithMembersOut>(`/teams/${teamId}/members`, members),
 
   // Project Teams
   assignTeamToProject: (projectId: string, payload: ProjectTeamAssign) =>
