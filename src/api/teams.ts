@@ -12,6 +12,7 @@ export const teamApi = {
   createTeam: (data: TeamCreate) => apiClient.post<TeamWithMembersOut>("/teams", data),
   listTeams: () => apiClient.get<TeamWithMembersOut[]>("/teams"),
   getTeam: (teamId: string) => apiClient.get<TeamWithMembersOut>(`/teams/${teamId}`),
+  removeTeam: (teamId: string) => apiClient.delete(`/teams/${teamId}`),
 
   // Project Teams
   assignTeamToProject: (projectId: string, payload: ProjectTeamAssign) =>

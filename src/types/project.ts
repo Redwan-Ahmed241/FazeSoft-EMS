@@ -1,5 +1,14 @@
 // TypeScript interfaces matching app/schemas/project.py in the FastAPI backend.
 
+export interface ProjectFormData {
+  projectName: string;
+  projectCode: string;
+  description: string;
+  clientId: string;
+  startDate: string;
+  endDate: string;
+}
+
 export interface ProjectCreate {
   project_name: string;
   project_code: string;

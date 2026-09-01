@@ -6,4 +6,5 @@ export const projectApi = {
   create: (data: ProjectCreate) => apiClient.post<ProjectOut>("/projects", data),
   list: () => apiClient.get<ProjectListOut[]>("/projects"),
   get: (id: string) => apiClient.get<ProjectOut>(`/projects/${id}`),
+  remove: (id: string) => apiClient.delete(`/projects/${id}`),
 };

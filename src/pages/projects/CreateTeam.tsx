@@ -6,22 +6,14 @@ import {
   ArrowRight,
   ArrowLeft,
   X,
-  UserCheck,
   CheckCircle2,
-  AlertCircle,
-  Briefcase,
-  Layers,
   Sparkles,
   Loader2,
 } from "lucide-react";
-import { toast } from "sonner@2.0.3";
-import { projectApi } from "../../api/projects";
-import { teamApi } from "../../api/teams";
 import { authApi } from "../../api/auth";
 import { useSharedContext } from "../../context/SharedContext";
-import InitialsAvatar from "../../components/common/ui/InitialsAvatar";
 import type { TeamMemberRole } from "../../types/team";
-import type { ProjectOut } from "../../types/project";
+import type { ProjectFormData } from "../../types/project";
 import type { UserOut } from "../../types/auth";
 
 interface MemberSelection {
@@ -32,60 +24,58 @@ interface MemberSelection {
   role: TeamMemberRole;
 }
 
+interface EmployeeOption {
+  id: string;
+  name: string;
+  email: string;
+  jobTitle: string;
+}
+
 export function CreateTeam() {
   const { projectId } = useParams<{ projectId: string }>();
   const navigate = useNavigate();
   const location = useLocation();
   const { employees } = useSharedContext();
 
-  const [project, setProject] = useState<ProjectOut | null>(null);
-  const [loadingProject, setLoadingProject] = useState(true);
-  const [submitting, setSubmitting] = useState(false);
+  const existingProjectMode = !!projectId && !location.state?.projectData;
+  const projectData = (location.state?.projectData ?? {}) as Partial<ProjectFormData>;
 
-  // Form State
-  const [teamName, setTeamName] = useState("");
-  const [description, setDescription] = useState("");
+  const restoredTeamData = location.state?.teamData as
+    | {
+        teamName?: string;
+        description?: string;
+        members?: {
+          userId: string;
+          name: string;
+          email: string;
+          role: TeamMemberRole;
+          jobTitle?: string;
+        }[];
+      }
+    | null
+    | undefined;
 
-  // Employee Selection State
-  const [allEmployees, setAllEmployees] = useState<Array<{ id: string; name: string; email: string; jobTitle: string }>>([]);
+  const [teamName, setTeamName] = useState(restoredTeamData?.teamName ?? "");
+  const [description, setDescription] = useState(restoredTeamData?.description ?? "");
+
+  const [allEmployees, setAllEmployees] = useState<EmployeeOption[]>([]);
   const [loadingEmployees, setLoadingEmployees] = useState(true);
   const [searchQuery, setSearchQuery] = useState("");
-  const [selectedMembers, setSelectedMembers] = useState<Map<string, MemberSelection>>(new Map());
-
-  // Project details loading
-  useEffect(() => {
-    async function fetchProject() {
-      if (!projectId) return;
-      try {
-        setLoadingProject(true);
-        const data = await projectApi.get(projectId);
-        setProject(data);
-      } catch (err: unknown) {
-        console.error("Failed to load project details:", err);
-        // If passed from location state fallback
-        if (location.state?.projectName) {
-          setProject({
-            project_id: projectId,
-            project_name: location.state.projectName,
-            project_code: location.state.projectCode || "",
-            description: "",
-            status: "In Progress",
-            manager_id: "",
-            client_id: "",
-            start_date: "",
-            end_date: "",
-            created_at: "",
-            updated_at: "",
-          });
-        } else {
-          toast.error("Could not fetch project details.");
-        }
-      } finally {
-        setLoadingProject(false);
-      }
+  const [selectedMembers, setSelectedMembers] = useState<Map<string, MemberSelection>>(
+    () => {
+      const map = new Map<string, MemberSelection>();
+      restoredTeamData?.members?.forEach((m) => {
+        map.set(m.userId, {
+          userId: m.userId,
+          name: m.name,
+          email: m.email,
+          jobTitle: m.jobTitle,
+          role: m.role,
+        });
+      });
+      return map;
     }
-    fetchProject();
-  }, [projectId, location.state]);
+  );
 
   // Load available staff/employees from backend auth / sharedContext
   useEffect(() => {
@@ -107,7 +97,6 @@ export function CreateTeam() {
         console.warn("FastAPI listUsers failed or offline, falling back to local staff directory", err);
       }
 
-      // Fallback from SharedContext if backend users table is minimal
       if (employees && employees.length > 0) {
         const mapped = employees.map((e) => ({
           id: String(e.id),
@@ -117,7 +106,6 @@ export function CreateTeam() {
         }));
         setAllEmployees(mapped);
       } else {
-        // Fallback default demo staff
         setAllEmployees([
           { id: "1", name: "John Doe", email: "john@example.com", jobTitle: "Senior Backend Engineer" },
           { id: "2", name: "Jane Smith", email: "jane@example.com", jobTitle: "UI/UX Frontend Dev" },
@@ -132,7 +120,6 @@ export function CreateTeam() {
     fetchStaff().finally(() => setLoadingEmployees(false));
   }, [employees]);
 
-  // Filter employees by search query
   const filteredEmployees = allEmployees.filter((emp) => {
     const q = searchQuery.toLowerCase();
     return (
@@ -142,8 +129,7 @@ export function CreateTeam() {
     );
   });
 
-  // Toggle employee selection
-  const handleToggleMember = (emp: { id: string; name: string; email: string; jobTitle: string }, defaultRole: TeamMemberRole = "front_end") => {
+  const handleToggleMember = (emp: EmployeeOption, defaultRole: TeamMemberRole = "front_end") => {
     const next = new Map(selectedMembers);
     if (next.has(emp.id)) {
       next.delete(emp.id);
@@ -159,7 +145,6 @@ export function CreateTeam() {
     setSelectedMembers(next);
   };
 
-  // Change selected member role
   const handleRoleChange = (userId: string, newRole: TeamMemberRole) => {
     const next = new Map(selectedMembers);
     const existing = next.get(userId);
@@ -169,64 +154,69 @@ export function CreateTeam() {
     }
   };
 
-  // Remove member from badge list
   const handleRemoveMember = (userId: string) => {
     const next = new Map(selectedMembers);
     next.delete(userId);
     setSelectedMembers(next);
   };
 
-  // On Submit
-  const handleSubmit = async (e: React.FormEvent) => {
+  const canContinue =
+    teamName.trim().length > 0 &&
+    description.trim().length > 0 &&
+    selectedMembers.size > 0;
+
+  const hasSelectedMembers = selectedMembers.size > 0;
+
+  const handleSkipForNow = () => {
+    if (existingProjectMode) {
+      navigate(`/dashboard/projects/${projectId}`);
+      return;
+    }
+    // Skip team assembly — proceed to review to create the project only.
+    navigate(`/dashboard/projects/create/review`, {
+      state: {
+        projectData,
+        teamData: null,
+      },
+    });
+  };
+
+  const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
 
-    if (!projectId) {
-      toast.error("Project ID is missing.");
-      return;
-    }
-    if (!teamName.trim()) {
-      toast.error("Please enter a Team Name.");
-      return;
-    }
-    if (!description.trim()) {
-      toast.error("Please enter a Team Description.");
+    if (!canContinue) {
       return;
     }
 
-    try {
-      setSubmitting(true);
-
-      // Convert selected members to backend payload
-      const membersPayload = Array.from(selectedMembers.values()).map((m) => ({
-        user_id: m.userId,
+    const teamData = {
+      teamName: teamName.trim(),
+      description: description.trim(),
+      members: Array.from(selectedMembers.values()).map((m) => ({
+        userId: m.userId,
+        name: m.name,
+        email: m.email,
         role: m.role,
-      }));
+      })),
+    };
 
-      // 1. Create team with members
-      const createdTeam = await teamApi.createTeam({
-        team_name: teamName.trim(),
-        description: description.trim(),
-        members: membersPayload,
+    if (existingProjectMode) {
+      navigate(`/dashboard/projects/create/review`, {
+        state: {
+          projectId,
+          projectData: null,
+          existingProjectName: projectData.projectName || "Existing Project",
+          teamData,
+        },
       });
-
-      // 2. Assign created team to project
-      await teamApi.assignTeamToProject(projectId, {
-        team_id: createdTeam.team_id,
-      });
-
-      toast.success("Team created and assigned to project!", {
-        description: `${createdTeam.team_name} with ${membersPayload.length} member(s).`,
-      });
-
-      // 3. Navigate to Project Detail page
-      navigate(`/dashboard/projects/${projectId}`);
-    } catch (err: unknown) {
-      console.error("Team creation failed:", err);
-      const msg = err instanceof Error ? err.message : "Failed to create team.";
-      toast.error(msg);
-    } finally {
-      setSubmitting(false);
+      return;
     }
+
+    navigate(`/dashboard/projects/create/review`, {
+      state: {
+        projectData,
+        teamData,
+      },
+    });
   };
 
   return (
@@ -241,23 +231,25 @@ export function CreateTeam() {
             <div>
               <div className="flex items-center gap-2">
                 <span className="text-xs font-semibold uppercase tracking-wider px-2.5 py-0.5 rounded-full bg-purple-100 dark:bg-purple-950/50 text-purple-700 dark:text-purple-300">
-                  Step 2 of 2
+                  {existingProjectMode ? "Team Setup" : "Step 2 of 3"}
                 </span>
                 <span className="text-xs text-muted-foreground flex items-center gap-1">
                   <Sparkles className="w-3 h-3 text-amber-500" /> Team Assembly
                 </span>
               </div>
               <h1 className="text-2xl font-bold text-foreground mt-0.5">
-                Create Team & Assign Members
+                {existingProjectMode ? "Add Team to Project" : "Create Team &amp; Assign Members"}
               </h1>
               <p className="text-xs font-medium text-muted-foreground mt-0.5">
                 Project:{" "}
                 <span className="font-semibold text-foreground">
-                  {loadingProject ? "Loading..." : project?.project_name || "Assigned Project"}
+                  {existingProjectMode
+                    ? projectData.projectName || "Existing Project"
+                    : projectData.projectName || "New Project"}
                 </span>
-                {project?.project_code && (
+                {projectData.projectCode && (
                   <span className="ml-2 font-mono text-xs bg-muted px-2 py-0.5 rounded border border-border">
-                    {project.project_code}
+                    {projectData.projectCode}
                   </span>
                 )}
               </p>
@@ -266,15 +258,18 @@ export function CreateTeam() {
 
           {/* Stepper Progress */}
           <div className="flex items-center gap-2 text-sm font-medium bg-muted/60 px-4 py-2 rounded-xl border border-border/50">
-            <span className="w-6 h-6 rounded-full bg-green-500 text-white text-xs flex items-center justify-center font-bold">
-              ✓
-            </span>
+            <span className="w-6 h-6 rounded-full bg-green-500 text-white text-xs flex items-center justify-center font-bold">✓</span>
             <span className="text-muted-foreground line-through">Project Details</span>
             <span className="text-muted-foreground">→</span>
-            <span className="w-6 h-6 rounded-full bg-primary text-primary-foreground text-xs flex items-center justify-center font-bold">
-              2
-            </span>
+            <span className="w-6 h-6 rounded-full bg-primary text-primary-foreground text-xs flex items-center justify-center font-bold">2</span>
             <span className="text-foreground font-semibold">Team Setup</span>
+            {!existingProjectMode && (
+              <>
+                <span className="text-muted-foreground">→</span>
+                <span className="w-6 h-6 rounded-full bg-muted-foreground/20 text-muted-foreground text-xs flex items-center justify-center font-medium">3</span>
+                <span className="text-muted-foreground">Review</span>
+              </>
+            )}
           </div>
         </div>
       </div>
@@ -284,9 +279,7 @@ export function CreateTeam() {
         {/* Section 1: Team Info */}
         <div className="space-y-4">
           <div className="border-b border-border/60 pb-3">
-            <h2 className="text-lg font-semibold text-foreground flex items-center gap-2">
-              <Layers className="w-5 h-5 text-purple-600" /> Team Details
-            </h2>
+            <h2 className="text-lg font-semibold text-foreground">Team Details</h2>
             <p className="text-sm text-muted-foreground mt-0.5">
               Specify the team title and mission for this project.
             </p>
@@ -337,7 +330,6 @@ export function CreateTeam() {
             </span>
           </div>
 
-          {/* Search Box */}
           <div className="relative">
             <div className="absolute inset-y-0 left-0 pl-3.5 flex items-center pointer-events-none text-muted-foreground">
               <Search className="w-4 h-4" />
@@ -351,7 +343,6 @@ export function CreateTeam() {
             />
           </div>
 
-          {/* Employee Pick List */}
           <div className="border border-border rounded-xl divide-y divide-border/60 max-h-64 overflow-y-auto bg-muted/20">
             {loadingEmployees ? (
               <div className="p-8 text-center text-sm text-muted-foreground flex items-center justify-center gap-2">
@@ -390,7 +381,6 @@ export function CreateTeam() {
                       </div>
                     </label>
 
-                    {/* Role Dropdown */}
                     <div className="flex items-center gap-2 flex-shrink-0">
                       <select
                         value={roleValue}
@@ -414,7 +404,6 @@ export function CreateTeam() {
             )}
           </div>
 
-          {/* Selected Members Section */}
           {selectedMembers.size > 0 && (
             <div className="space-y-3 pt-2">
               <h3 className="text-sm font-semibold text-foreground flex items-center gap-2">
@@ -435,7 +424,6 @@ export function CreateTeam() {
                         <p className="text-[11px] text-muted-foreground truncate">{m.email}</p>
                       </div>
                     </div>
-
                     <div className="flex items-center gap-1.5 flex-shrink-0">
                       <span
                         className={`text-[11px] font-semibold px-2 py-0.5 rounded-md ${
@@ -466,46 +454,35 @@ export function CreateTeam() {
         <div className="pt-6 border-t border-border flex flex-wrap items-center justify-between gap-3">
           <button
             type="button"
-            onClick={() =>
-              navigate(`/dashboard/projects/create`, {
-                state: {
-                  projectName: (location.state as any)?.projectName,
-                  projectCode: (location.state as any)?.projectCode,
-                  description: (location.state as any)?.description,
-                  startDate: (location.state as any)?.startDate,
-                  endDate: (location.state as any)?.endDate,
-                  clientId: (location.state as any)?.clientId,
-                },
-              })
-            }
+            onClick={() => {
+              if (existingProjectMode) {
+                navigate(`/dashboard/projects/${projectId}`);
+              } else {
+                navigate(`/dashboard/projects/create`, { state: { ...projectData } });
+              }
+            }}
             className="flex items-center gap-2 px-4 py-2.5 rounded-xl border border-border text-foreground hover:bg-muted font-medium transition cursor-pointer"
           >
-            <ArrowLeft className="w-4 h-4" /> Back to Project
+            <ArrowLeft className="w-4 h-4" /> {existingProjectMode ? "Back to Project" : "Back to Project Details"}
           </button>
 
-          <div className="flex items-center gap-3 flex-wrap">
+          <div className="flex items-center gap-2.5 flex-wrap">
             <button
               type="button"
-              onClick={() => navigate(`/dashboard/projects/${projectId}`)}
-              className="px-4 py-2.5 rounded-xl border border-border text-muted-foreground hover:text-foreground font-medium transition cursor-pointer"
+              onClick={handleSkipForNow}
+              className="flex items-center gap-2 px-4 py-2.5 rounded-xl border border-border text-muted-foreground hover:bg-muted hover:text-foreground font-medium transition cursor-pointer"
             >
               Skip For Now
             </button>
-            <button
-              type="submit"
-              disabled={submitting}
-              className="flex items-center gap-2 px-6 py-2.5 rounded-xl bg-purple-600 text-white font-semibold shadow-md hover:bg-purple-700 transition disabled:opacity-50 disabled:cursor-not-allowed cursor-pointer"
-            >
-              {submitting ? (
-                <>
-                  <Loader2 className="w-4 h-4 animate-spin" /> Creating Team...
-                </>
-              ) : (
-                <>
-                  Create Team <ArrowRight className="w-4 h-4" />
-                </>
-              )}
-            </button>
+
+            {hasSelectedMembers && (
+              <button
+                type="submit"
+                className="flex items-center gap-2 px-6 py-2.5 rounded-xl bg-purple-600 text-white font-semibold shadow-md hover:bg-purple-700 transition cursor-pointer"
+              >
+                Continue to Review <ArrowRight className="w-4 h-4" />
+              </button>
+            )}
           </div>
         </div>
       </form>

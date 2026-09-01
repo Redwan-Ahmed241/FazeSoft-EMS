@@ -12,30 +12,22 @@ import {
   Loader2
 } from "lucide-react";
 import { toast } from "sonner@2.0.3";
-import { projectApi } from "../../api/projects";
 import { clientsApi } from "../../api/clients";
 import { useAuth } from "../../context/AuthContext";
 import type { ClientOut } from "../../types/client";
+import type { ProjectFormData } from "../../types/project";
 
 export function CreateProject() {
   const navigate = useNavigate();
   const location = useLocation();
   const { user } = useAuth();
 
-  const draft = (location.state ?? {}) as {
-    projectName?: string;
-    projectCode?: string;
-    description?: string;
-    startDate?: string;
-    endDate?: string;
-    clientId?: string;
-  };
+  const draft = (location.state ?? {}) as Partial<ProjectFormData>;
 
-  const [loading, setLoading] = useState(false);
   const [fetchingClients, setFetchingClients] = useState(true);
   const [clients, setClients] = useState<ClientOut[]>([]);
 
-  // Form fields — prefilled from draft state when returning from Step 2
+  // Form fields — prefilled from draft state when returning from a later step
   const [projectName, setProjectName] = useState(draft.projectName ?? "");
   const [projectCode, setProjectCode] = useState(draft.projectCode ?? "");
   const [description, setDescription] = useState(draft.description ?? "");
@@ -79,7 +71,7 @@ export function CreateProject() {
     }
   };
 
-  const handleSubmit = async (e: React.FormEvent) => {
+  const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
 
     if (!projectName.trim()) {
@@ -107,39 +99,17 @@ export function CreateProject() {
       return;
     }
 
-    try {
-      setLoading(true);
-      const res = await projectApi.create({
-        project_name: projectName.trim(),
-        project_code: projectCode.trim().toUpperCase(),
-        description: description.trim(),
-        client_id: clientId,
-        start_date: startDate,
-        end_date: endDate,
-      });
+    const projectData: ProjectFormData = {
+      projectName: projectName.trim(),
+      projectCode: projectCode.trim().toUpperCase(),
+      description: description.trim(),
+      clientId,
+      startDate,
+      endDate,
+    };
 
-      toast.success("Project created successfully!", {
-        description: `Moving to Step 2: Assemble team for ${res.project_name}`,
-      });
-
-      // Redirect to Step 2 with project_id in URL and pass project name in state
-      navigate(`/dashboard/projects/${res.project_id}/create-team`, {
-        state: {
-          projectName: res.project_name,
-          projectCode: res.project_code,
-          description,
-          startDate,
-          endDate,
-          clientId,
-        },
-      });
-    } catch (err: unknown) {
-      console.error("Create project error:", err);
-      const msg = err instanceof Error ? err.message : "Failed to create project.";
-      toast.error(msg);
-    } finally {
-      setLoading(false);
-    }
+    // Move to Step 2 — no API call here. Creation happens on the review page.
+    navigate(`/dashboard/projects/create/team`, { state: { projectData } });
   };
 
   return (
@@ -154,7 +124,7 @@ export function CreateProject() {
             <div>
               <div className="flex items-center gap-2">
                 <span className="text-xs font-semibold uppercase tracking-wider px-2.5 py-0.5 rounded-full bg-primary/10 text-primary">
-                  Step 1 of 2
+                  Step 1 of 3
                 </span>
                 <span className="text-xs text-muted-foreground flex items-center gap-1">
                   <Sparkles className="w-3 h-3 text-amber-500" /> Project Definition
@@ -333,18 +303,10 @@ export function CreateProject() {
           </button>
           <button
             type="submit"
-            disabled={loading || clients.length === 0}
+            disabled={clients.length === 0}
             className="flex items-center gap-2 px-6 py-2.5 rounded-xl bg-primary text-primary-foreground font-semibold shadow-md hover:bg-primary/90 transition disabled:opacity-50 disabled:cursor-not-allowed cursor-pointer"
           >
-            {loading ? (
-              <>
-                <Loader2 className="w-4 h-4 animate-spin" /> Creating Project...
-              </>
-            ) : (
-              <>
-                Create Project <ArrowRight className="w-4 h-4" />
-              </>
-            )}
+            Continue to Team <ArrowRight className="w-4 h-4" />
           </button>
         </div>
       </form>
