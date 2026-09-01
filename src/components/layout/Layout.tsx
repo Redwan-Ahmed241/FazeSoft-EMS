@@ -23,8 +23,9 @@ import {
   Shield,
   ClipboardList,
   ListTodo,
-  History as HistoryIcon,
+  FolderPlus,
 } from "lucide-react";
+import { History as HistoryIcon } from "lucide-react";
 
 function getNotifColor(type: string): string {
   const map: { [key: string]: string } = {
@@ -46,6 +47,7 @@ function getNotifIcon(type: string): string {
 
 const allMenuItems = [
   { path: "/dashboard",               icon: LayoutDashboard, label: "Dashboard",  roles: ["hr", "candidate", "admin", "employee"] },
+  { path: "/dashboard/projects/create", icon: FolderPlus,    label: "New Project", roles: ["hr", "admin"] },
   { path: "/dashboard/candidate",     icon: UserCheck,       label: "Candidates", roles: ["hr", "admin"] },
   { path: "/dashboard/employees",     icon: Users,           label: "Employees",  roles: ["hr", "admin"] },
   { path: "/dashboard/calendar",      icon: Calendar,        label: "Interviews", roles: ["hr", "admin"] },

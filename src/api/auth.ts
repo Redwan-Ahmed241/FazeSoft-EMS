@@ -7,4 +7,5 @@ export const authApi = {
   signup: (payload: UserCreate) => apiClient.post<Token>("/auth/signup", payload),
   createEmployee: (payload: EmployeeCreate) => apiClient.post<UserOut>("/auth/create-employee", payload),
   me: () => apiClient.get<UserOut>("/auth/me"),
-};
+  listUsers: () => apiClient.get<UserOut[]>("/auth/users"),
+};

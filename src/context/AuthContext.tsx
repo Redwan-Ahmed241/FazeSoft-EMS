@@ -87,6 +87,10 @@ async function supabaseLogin(email: string, password: string): Promise<User> {
     throw new Error("Email not verified. Please check your inbox for the verification link.");
   }
 
+  if (data.session?.access_token) {
+    localStorage.setItem('token', data.session.access_token);
+  }
+
   const { data: profile } = await supabase
     .from('profiles')
     .select('name, role, phone, location, job_title, bio, avatar, department, employee_id, joining_date, employment_status, dob, blood_group, permanent_address, address, tin, bank_account_no, nid_no, fathers_name, mothers_name, emergency_contact, date_of_exit, last_salary')
@@ -237,6 +241,9 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
               setUser(null);
               setIsLoading(false);
               return;
+            }
+            if (session.access_token) {
+              localStorage.setItem('token', session.access_token);
             }
             const { data: profile } = await supabase
               .from('profiles')

@@ -21,6 +21,10 @@ import { MyTasks } from "./pages/employees/MyTasks";
 import { TeamProgress } from "./pages/employees/TeamProgress";
 import { History } from "./pages/employees/History";
 
+import { CreateProject } from "./pages/projects/CreateProject";
+import { CreateTeam } from "./pages/projects/CreateTeam";
+import { ProjectDetail } from "./pages/projects/ProjectDetail";
+
 export const router = createBrowserRouter([
   {
     path: "/",
@@ -59,6 +63,9 @@ export const router = createBrowserRouter([
       { path: "employees", Component: () => <ProtectedRoute allowedRoles={["hr", "admin"]}><Employees /></ProtectedRoute> },
       { path: "job-posting", Component: () => <ProtectedRoute allowedRoles={["hr", "admin"]}><JobPosting /></ProtectedRoute> },
       { path: "candidate", Component: () => <ProtectedRoute allowedRoles={["hr", "admin"]}><Candidate /></ProtectedRoute> },
+      { path: "projects/create", Component: () => <ProtectedRoute allowedRoles={["hr", "admin"]}><CreateProject /></ProtectedRoute> },
+      { path: "projects/:projectId/create-team", Component: () => <ProtectedRoute allowedRoles={["hr", "admin"]}><CreateTeam /></ProtectedRoute> },
+      { path: "projects/:projectId", Component: () => <ProtectedRoute allowedRoles={["hr", "admin"]}><ProjectDetail /></ProtectedRoute> },
       { path: "calendar", Component: CalendarPage },
       { path: "resume-parsing", Component: ResumeParsing },
       { path: "tasks", Component: () => <ProtectedRoute allowedRoles={["employee"]}><MyTasks /></ProtectedRoute> },
@@ -68,4 +75,4 @@ export const router = createBrowserRouter([
       { path: "settings", Component: Settings },
     ],
   },
-]);
+]);
