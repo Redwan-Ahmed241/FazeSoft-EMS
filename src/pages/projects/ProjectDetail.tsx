@@ -16,23 +16,72 @@ import {
   Loader2,
   ShieldCheck,
   Pencil,
+  ListTodo,
+  Flag,
+  User as LucideUser,
 } from "lucide-react";
 import { toast } from "sonner@2.0.3";
 import { projectApi } from "../../api/projects";
 import { teamApi } from "../../api/teams";
 import { clientsApi } from "../../api/clients";
+import { taskApi } from "../../api/tasks";
+import { useAuth } from "../../context/AuthContext";
 import type { ProjectOut } from "../../types/project";
 import type { TeamWithMembersOut } from "../../types/team";
 import type { ClientOut } from "../../types/client";
+import type { TaskOut, TaskPriority, TaskStatus } from "../../types/task";
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+  DialogDescription,
+  DialogFooter,
+} from "../../components/common/ui/dialog";
 
 export function ProjectDetail() {
   const { projectId } = useParams<{ projectId: string }>();
   const navigate = useNavigate();
+  const { user } = useAuth();
+
+  const currentUser = user as (typeof user & { permissions?: string[] });
+  const canAssignTask =
+    currentUser?.permissions?.includes("assign_task") ||
+    currentUser?.role === "admin" ||
+    currentUser?.role === "hr";
+  const canUpdateTask =
+    currentUser?.permissions?.includes("update_task") ||
+    currentUser?.role === "admin" ||
+    currentUser?.role === "hr";
 
   const [loading, setLoading] = useState(true);
   const [project, setProject] = useState<ProjectOut | null>(null);
   const [teams, setTeams] = useState<TeamWithMembersOut[]>([]);
   const [client, setClient] = useState<ClientOut | null>(null);
+
+  // Task section state
+  const [tasks, setTasks] = useState<TaskOut[]>([]);
+  const [tasksLoading, setTasksLoading] = useState(true);
+
+  // Assign task modal state
+  const [assignModalOpen, setAssignModalOpen] = useState(false);
+  const [assignSubmitting, setAssignSubmitting] = useState(false);
+  const [newTitle, setNewTitle] = useState("");
+  const [newDescription, setNewDescription] = useState("");
+  const [newPriority, setNewPriority] = useState<TaskPriority>("Medium");
+  const [newAssignedTo, setNewAssignedTo] = useState("");
+  const [newDeadline, setNewDeadline] = useState("");
+
+  // Edit task modal state
+  const [editModalOpen, setEditModalOpen] = useState(false);
+  const [editSubmitting, setEditSubmitting] = useState(false);
+  const [editingTask, setEditingTask] = useState<TaskOut | null>(null);
+  const [editTitle, setEditTitle] = useState("");
+  const [editDescription, setEditDescription] = useState("");
+  const [editPriority, setEditPriority] = useState<TaskPriority>("Medium");
+  const [editStatus, setEditStatus] = useState<TaskStatus>("Todo");
+  const [editAssignedTo, setEditAssignedTo] = useState("");
+  const [editDeadline, setEditDeadline] = useState("");
 
   useEffect(() => {
     async function loadData() {
@@ -69,7 +118,95 @@ export function ProjectDetail() {
     }
 
     loadData();
+    loadTasks();
   }, [projectId]);
+
+  async function loadTasks() {
+    if (!projectId) return;
+    try {
+      setTasksLoading(true);
+      const data = await taskApi.listByProject(projectId);
+      setTasks(data || []);
+    } catch (err: unknown) {
+      console.error("Failed to load project tasks:", err);
+    } finally {
+      setTasksLoading(false);
+    }
+  }
+
+  // Unique team members across all teams assigned to this project
+  const projectTeamMembers = Array.from(
+    new Map(
+      teams.flatMap((t) => t.members || []).map((m) => [m.user_id, m])
+    ).values()
+  );
+
+  async function handleCreateTask(e: React.FormEvent) {
+    e.preventDefault();
+    if (!projectId) return;
+    if (!newAssignedTo) {
+      toast.error("Please select a team member to assign this task to.");
+      return;
+    }
+    try {
+      setAssignSubmitting(true);
+      await taskApi.create(projectId, {
+        title: newTitle.trim(),
+        description: newDescription.trim(),
+        priority: newPriority,
+        assigned_to: newAssignedTo,
+        deadline: newDeadline,
+      });
+      toast.success("Task assigned successfully!");
+      setAssignModalOpen(false);
+      setNewTitle("");
+      setNewDescription("");
+      setNewPriority("Medium");
+      setNewAssignedTo("");
+      setNewDeadline("");
+      await loadTasks();
+    } catch (err: unknown) {
+      const message = err instanceof Error ? err.message : "Failed to assign task.";
+      toast.error(message);
+    } finally {
+      setAssignSubmitting(false);
+    }
+  }
+
+  function openEditModal(t: TaskOut) {
+    setEditingTask(t);
+    setEditTitle(t.title);
+    setEditDescription(t.description);
+    setEditPriority(t.priority);
+    setEditStatus(t.status);
+    setEditAssignedTo(t.assigned_to);
+    setEditDeadline(t.deadline);
+    setEditModalOpen(true);
+  }
+
+  async function handleUpdateTask(e: React.FormEvent) {
+    e.preventDefault();
+    if (!projectId || !editingTask) return;
+    try {
+      setEditSubmitting(true);
+      await taskApi.update(projectId, editingTask.task_id, {
+        title: editTitle.trim(),
+        description: editDescription.trim(),
+        priority: editPriority,
+        status: editStatus,
+        assigned_to: editAssignedTo,
+        deadline: editDeadline,
+      });
+      toast.success("Task updated successfully!");
+      setEditModalOpen(false);
+      await loadTasks();
+    } catch (err: unknown) {
+      const message = err instanceof Error ? err.message : "Failed to update task.";
+      toast.error(message);
+    } finally {
+      setEditSubmitting(false);
+    }
+  }
 
   if (loading) {
     return (
@@ -302,6 +439,405 @@ export function ProjectDetail() {
           </div>
         )}
       </div>
+
+      {/* Task Section */}
+      <div className="space-y-4 pt-4">
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+          <div>
+            <h2 className="text-xl font-bold text-foreground flex items-center gap-2">
+              <ListTodo className="w-5 h-5 text-primary" /> Project Tasks & Deliverables
+            </h2>
+            <p className="text-sm text-muted-foreground">
+              Assign and track individual tasks for this project's team members.
+            </p>
+          </div>
+
+          <div className="flex items-center gap-3">
+            <span className="text-xs font-semibold px-3 py-1 rounded-full bg-muted text-foreground border border-border">
+              {tasks.length} Task(s)
+            </span>
+            {canAssignTask && (
+              <button
+                type="button"
+                onClick={() => setAssignModalOpen(true)}
+                className="flex items-center gap-2 px-4 py-2 rounded-xl bg-primary text-primary-foreground font-medium text-sm hover:bg-primary/90 transition shadow-xs cursor-pointer"
+              >
+                <Plus className="w-4 h-4" /> Assign Task
+              </button>
+            )}
+          </div>
+        </div>
+
+        {/* Loading Skeleton */}
+        {tasksLoading ? (
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            {[1, 2].map((n) => (
+              <div
+                key={n}
+                className="rounded-xl bg-card border border-border p-4 shadow-sm animate-pulse space-y-3"
+              >
+                <div className="flex justify-between items-center">
+                  <div className="h-4 bg-muted rounded-md w-1/3" />
+                  <div className="h-4 bg-muted rounded-full w-16" />
+                </div>
+                <div className="h-3 bg-muted rounded-md w-3/4" />
+                <div className="h-3 bg-muted rounded-md w-1/2" />
+                <div className="pt-2 border-t border-border flex justify-between">
+                  <div className="h-3 bg-muted rounded-md w-24" />
+                  <div className="h-3 bg-muted rounded-md w-20" />
+                </div>
+              </div>
+            ))}
+          </div>
+        ) : tasks.length === 0 ? (
+          /* Empty State */
+          <div className="bg-card border border-border border-dashed rounded-2xl p-10 text-center space-y-3">
+            <ListTodo className="w-10 h-10 text-muted-foreground mx-auto opacity-60" />
+            <h3 className="text-base font-semibold text-foreground">No Tasks Assigned Yet</h3>
+            <p className="text-sm text-muted-foreground max-w-sm mx-auto">
+              There are no tasks created for this project. Use the button above to assign tasks to team members.
+            </p>
+            {canAssignTask && (
+              <button
+                type="button"
+                onClick={() => setAssignModalOpen(true)}
+                className="inline-flex items-center gap-2 px-4 py-2 rounded-xl bg-primary text-primary-foreground font-medium text-sm hover:bg-primary/90 transition shadow-xs cursor-pointer"
+              >
+                <Plus className="w-4 h-4" /> Assign First Task
+              </button>
+            )}
+          </div>
+        ) : (
+          /* Task Cards Grid */
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            {tasks.map((task) => (
+              <div
+                key={task.task_id}
+                className="rounded-xl bg-card border border-border p-4 shadow-sm hover:shadow-md transition-shadow space-y-3"
+              >
+                <div className="flex items-start justify-between gap-3">
+                  <div className="space-y-1 min-w-0">
+                    <h3 className="text-sm font-bold text-foreground truncate">
+                      {task.title}
+                    </h3>
+                  </div>
+
+                  <div className="flex items-center gap-1.5 shrink-0">
+                    <span
+                      className={`px-2 py-0.5 text-[10px] font-semibold rounded-full ${
+                        task.priority === "High"
+                          ? "bg-red-100 text-red-700 dark:bg-red-950/50 dark:text-red-300"
+                          : task.priority === "Medium"
+                          ? "bg-amber-100 text-amber-700 dark:bg-amber-950/50 dark:text-amber-300"
+                          : "bg-slate-100 text-slate-700 dark:bg-slate-800 dark:text-slate-300"
+                      }`}
+                    >
+                      {task.priority}
+                    </span>
+                    <span
+                      className={`px-2 py-0.5 text-[10px] font-semibold rounded-full ${
+                        task.status === "Done"
+                          ? "bg-green-100 text-green-700"
+                          : task.status === "In Progress"
+                          ? "bg-blue-100 text-blue-700"
+                          : "bg-amber-100 text-amber-700"
+                      }`}
+                    >
+                      {task.status}
+                    </span>
+                    {canUpdateTask && (
+                      <button
+                        type="button"
+                        onClick={() => openEditModal(task)}
+                        title="Edit Task"
+                        className="p-1 rounded-md text-muted-foreground hover:text-foreground hover:bg-muted transition cursor-pointer"
+                      >
+                        <Pencil className="w-3.5 h-3.5" />
+                      </button>
+                    )}
+                  </div>
+                </div>
+
+                <p className="text-xs text-muted-foreground line-clamp-3 leading-relaxed">
+                  {task.description}
+                </p>
+
+                <div className="pt-2 border-t border-border flex flex-wrap items-center justify-between gap-2 text-[11px] text-muted-foreground">
+                  <div className="flex items-center gap-1">
+                    <LucideUser className="w-3.5 h-3.5 text-primary" />
+                    <span>Assignee: #{task.assigned_to.slice(0, 8)}</span>
+                  </div>
+
+                  <div className="flex items-center gap-1">
+                    <Calendar className="w-3.5 h-3.5 text-amber-500" />
+                    <span>Due: {task.deadline}</span>
+                  </div>
+
+                  <div className="w-full text-[10px] text-muted-foreground/70 truncate">
+                    Assigned by: #{task.assigned_by.slice(0, 8)}
+                  </div>
+                </div>
+              </div>
+            ))}
+          </div>
+        )}
+      </div>
+
+      {/* Assign Task Modal */}
+      <Dialog open={assignModalOpen} onOpenChange={setAssignModalOpen}>
+        <DialogContent className="sm:max-w-lg bg-card border border-border">
+          <DialogHeader>
+            <DialogTitle className="flex items-center gap-2 text-lg font-bold text-foreground">
+              <Plus className="w-5 h-5 text-primary" /> Assign New Task
+            </DialogTitle>
+            <DialogDescription className="text-xs text-muted-foreground">
+              Assign a deliverable to a member of this project's teams.
+            </DialogDescription>
+          </DialogHeader>
+
+          <form onSubmit={handleCreateTask} className="space-y-4 py-2">
+            <div className="space-y-1">
+              <label className="text-xs font-semibold text-foreground">
+                Task Title <span className="text-destructive">*</span>
+              </label>
+              <input
+                type="text"
+                required
+                placeholder="e.g. Implement API Endpoints"
+                value={newTitle}
+                onChange={(e) => setNewTitle(e.target.value)}
+                className="w-full rounded-xl border border-border bg-background px-3 py-2 text-sm text-foreground focus:outline-hidden focus:ring-2 focus:ring-primary"
+              />
+            </div>
+
+            <div className="space-y-1">
+              <label className="text-xs font-semibold text-foreground">
+                Description <span className="text-destructive">*</span>
+              </label>
+              <textarea
+                required
+                rows={3}
+                placeholder="Detailed specifications, deliverables, and acceptance criteria..."
+                value={newDescription}
+                onChange={(e) => setNewDescription(e.target.value)}
+                className="w-full rounded-xl border border-border bg-background px-3 py-2 text-sm text-foreground focus:outline-hidden focus:ring-2 focus:ring-primary resize-none"
+              />
+            </div>
+
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+              <div className="space-y-1">
+                <label className="text-xs font-semibold text-foreground">
+                  Priority
+                </label>
+                <select
+                  value={newPriority}
+                  onChange={(e) => setNewPriority(e.target.value as TaskPriority)}
+                  className="w-full rounded-xl border border-border bg-background px-3 py-2 text-sm text-foreground focus:outline-hidden focus:ring-2 focus:ring-primary"
+                >
+                  <option value="Low">Low</option>
+                  <option value="Medium">Medium</option>
+                  <option value="High">High</option>
+                </select>
+              </div>
+
+              <div className="space-y-1">
+                <label className="text-xs font-semibold text-foreground">
+                  Deadline <span className="text-destructive">*</span>
+                </label>
+                <input
+                  type="date"
+                  required
+                  value={newDeadline}
+                  onChange={(e) => setNewDeadline(e.target.value)}
+                  className="w-full rounded-xl border border-border bg-background px-3 py-2 text-sm text-foreground focus:outline-hidden focus:ring-2 focus:ring-primary"
+                />
+              </div>
+            </div>
+
+            <div className="space-y-1">
+              <label className="text-xs font-semibold text-foreground">
+                Assign To Team Member <span className="text-destructive">*</span>
+              </label>
+              {projectTeamMembers.length === 0 ? (
+                <div className="p-3 rounded-xl border border-amber-500/30 bg-amber-500/10 text-xs text-amber-600 dark:text-amber-400">
+                  No team members found in this project. Please assign a team with members first.
+                </div>
+              ) : (
+                <select
+                  required
+                  value={newAssignedTo}
+                  onChange={(e) => setNewAssignedTo(e.target.value)}
+                  className="w-full rounded-xl border border-border bg-background px-3 py-2 text-sm text-foreground focus:outline-hidden focus:ring-2 focus:ring-primary"
+                >
+                  <option value="">-- Select Team Member --</option>
+                  {projectTeamMembers.map((m) => (
+                    <option key={m.user_id} value={m.user_id}>
+                      Member #{m.user_id.slice(0, 8)} ({m.role})
+                    </option>
+                  ))}
+                </select>
+              )}
+            </div>
+
+            <DialogFooter className="pt-3 gap-2">
+              <button
+                type="button"
+                onClick={() => setAssignModalOpen(false)}
+                className="px-4 py-2 rounded-xl bg-muted/60 text-foreground border border-border font-medium text-sm hover:bg-muted transition cursor-pointer"
+              >
+                Cancel
+              </button>
+              <button
+                type="submit"
+                disabled={assignSubmitting || projectTeamMembers.length === 0}
+                className="flex items-center gap-2 px-4 py-2 rounded-xl bg-primary text-primary-foreground font-medium text-sm hover:bg-primary/90 transition shadow-xs cursor-pointer disabled:opacity-50"
+              >
+                {assignSubmitting ? (
+                  <>
+                    <Loader2 className="w-4 h-4 animate-spin" /> Assigning...
+                  </>
+                ) : (
+                  <>
+                    <Plus className="w-4 h-4" /> Assign Task
+                  </>
+                )}
+              </button>
+            </DialogFooter>
+          </form>
+        </DialogContent>
+      </Dialog>
+
+      {/* Edit Task Modal */}
+      <Dialog open={editModalOpen} onOpenChange={setEditModalOpen}>
+        <DialogContent className="sm:max-w-lg bg-card border border-border">
+          <DialogHeader>
+            <DialogTitle className="flex items-center gap-2 text-lg font-bold text-foreground">
+              <Pencil className="w-5 h-5 text-primary" /> Edit Task
+            </DialogTitle>
+            <DialogDescription className="text-xs text-muted-foreground">
+              Update task details, status, or reassign within project squads.
+            </DialogDescription>
+          </DialogHeader>
+
+          <form onSubmit={handleUpdateTask} className="space-y-4 py-2">
+            <div className="space-y-1">
+              <label className="text-xs font-semibold text-foreground">
+                Task Title
+              </label>
+              <input
+                type="text"
+                required
+                value={editTitle}
+                onChange={(e) => setEditTitle(e.target.value)}
+                className="w-full rounded-xl border border-border bg-background px-3 py-2 text-sm text-foreground focus:outline-hidden focus:ring-2 focus:ring-primary"
+              />
+            </div>
+
+            <div className="space-y-1">
+              <label className="text-xs font-semibold text-foreground">
+                Description
+              </label>
+              <textarea
+                required
+                rows={3}
+                value={editDescription}
+                onChange={(e) => setEditDescription(e.target.value)}
+                className="w-full rounded-xl border border-border bg-background px-3 py-2 text-sm text-foreground focus:outline-hidden focus:ring-2 focus:ring-primary resize-none"
+              />
+            </div>
+
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+              <div className="space-y-1">
+                <label className="text-xs font-semibold text-foreground">
+                  Status
+                </label>
+                <select
+                  value={editStatus}
+                  onChange={(e) => setEditStatus(e.target.value as TaskStatus)}
+                  className="w-full rounded-xl border border-border bg-background px-3 py-2 text-sm text-foreground focus:outline-hidden focus:ring-2 focus:ring-primary"
+                >
+                  <option value="Todo">Todo</option>
+                  <option value="In Progress">In Progress</option>
+                  <option value="Done">Done</option>
+                </select>
+              </div>
+
+              <div className="space-y-1">
+                <label className="text-xs font-semibold text-foreground">
+                  Priority
+                </label>
+                <select
+                  value={editPriority}
+                  onChange={(e) => setEditPriority(e.target.value as TaskPriority)}
+                  className="w-full rounded-xl border border-border bg-background px-3 py-2 text-sm text-foreground focus:outline-hidden focus:ring-2 focus:ring-primary"
+                >
+                  <option value="Low">Low</option>
+                  <option value="Medium">Medium</option>
+                  <option value="High">High</option>
+                </select>
+              </div>
+            </div>
+
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+              <div className="space-y-1">
+                <label className="text-xs font-semibold text-foreground">
+                  Deadline
+                </label>
+                <input
+                  type="date"
+                  required
+                  value={editDeadline}
+                  onChange={(e) => setEditDeadline(e.target.value)}
+                  className="w-full rounded-xl border border-border bg-background px-3 py-2 text-sm text-foreground focus:outline-hidden focus:ring-2 focus:ring-primary"
+                />
+              </div>
+
+              <div className="space-y-1">
+                <label className="text-xs font-semibold text-foreground">
+                  Assigned Member
+                </label>
+                <select
+                  required
+                  value={editAssignedTo}
+                  onChange={(e) => setEditAssignedTo(e.target.value)}
+                  className="w-full rounded-xl border border-border bg-background px-3 py-2 text-sm text-foreground focus:outline-hidden focus:ring-2 focus:ring-primary"
+                >
+                  {projectTeamMembers.map((m) => (
+                    <option key={m.user_id} value={m.user_id}>
+                      Member #{m.user_id.slice(0, 8)} ({m.role})
+                    </option>
+                  ))}
+                </select>
+              </div>
+            </div>
+
+            <DialogFooter className="pt-3 gap-2">
+              <button
+                type="button"
+                onClick={() => setEditModalOpen(false)}
+                className="px-4 py-2 rounded-xl bg-muted/60 text-foreground border border-border font-medium text-sm hover:bg-muted transition cursor-pointer"
+              >
+                Cancel
+              </button>
+              <button
+                type="submit"
+                disabled={editSubmitting}
+                className="flex items-center gap-2 px-4 py-2 rounded-xl bg-primary text-primary-foreground font-medium text-sm hover:bg-primary/90 transition shadow-xs cursor-pointer disabled:opacity-50"
+              >
+                {editSubmitting ? (
+                  <>
+                    <Loader2 className="w-4 h-4 animate-spin" /> Saving...
+                  </>
+                ) : (
+                  <>
+                    <Pencil className="w-4 h-4" /> Save Changes
+                  </>
+                )}
+              </button>
+            </DialogFooter>
+          </form>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }
