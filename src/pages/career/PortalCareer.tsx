@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import { Link } from 'react-router';
 import { motion, AnimatePresence } from 'motion/react';
 import { 
   Search, Briefcase, MapPin, DollarSign, Clock, User, Lock, Mail, 
@@ -433,8 +434,8 @@ export function PortalCareer() {
           </div>
           <div className="portal-footer-column">
             <h4>Recruiters</h4>
-            <a href="/dashboard">Post a job</a>
-            <a href="/dashboard">HR Dashboard</a>
+            <Link to="/dashboard">Post a job</Link>
+            <Link to="/dashboard">HR Dashboard</Link>
           </div>
           <div className="portal-footer-column">
             <h4>Company</h4>

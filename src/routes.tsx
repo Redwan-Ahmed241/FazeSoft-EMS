@@ -1,4 +1,4 @@
-import { createBrowserRouter } from "react-router";
+import { createBrowserRouter, Navigate } from "react-router";
 import { Layout } from "./components/layout/Layout";
 import { Dashboard } from "./pages/dashboard/Dashboard";
 import { Report } from "./pages/dashboard/Report";
@@ -28,14 +28,37 @@ import { ProjectDetail } from "./pages/projects/ProjectDetail";
 import { ProjectList } from "./pages/projects/ProjectList";
 import { EditProject } from "./pages/projects/EditProject";
 
+const getBasename = (): string => {
+  if (typeof window !== "undefined") {
+    return window.location.pathname.startsWith("/ems") ? "/ems" : "";
+  }
+  return "/ems";
+};
+
 export const router = createBrowserRouter([
   {
     path: "/",
     Component: Login,
   },
   {
+    path: "/login",
+    Component: Login,
+  },
+  {
     path: "/signup",
     Component: Signup,
+  },
+  {
+    path: "/employees",
+    Component: () => <Navigate to="/dashboard/employees" replace />,
+  },
+  {
+    path: "/attendance",
+    Component: () => <Navigate to="/dashboard" replace />,
+  },
+  {
+    path: "/settings",
+    Component: () => <Navigate to="/dashboard/settings" replace />,
   },
   {
     path: "/career",
@@ -82,4 +105,6 @@ export const router = createBrowserRouter([
       { path: "settings", Component: Settings },
     ],
   },
-]);
+], {
+  basename: getBasename(),
+});
