@@ -272,18 +272,15 @@ export function Candidate() {
         setInterviewTime("");
         setEmailDeliveryFallback(null);
       } else {
-        // Backend SMTP unconfigured or encountered issue — offer seamless client fallback
-        setEmailDeliveryFallback({
-          reason: response?.message || "Automated SMTP server is not configured on the backend.",
-          isOpen: true,
-        });
+        // Backend provider (e.g. Resend in test mode) cannot deliver to external domain:
+        // Automatically open Gmail Web with pre-filled content so user never gets redirected to Outlook!
+        handleSendViaClient("gmail");
+        toast.info("Resend test mode: Opened in Gmail Web ready to send!");
       }
     } catch (err: any) {
       console.warn("Backend email dispatch error:", err);
-      setEmailDeliveryFallback({
-        reason: err?.message || "Automated SMTP server is not configured on the backend.",
-        isOpen: true,
-      });
+      handleSendViaClient("gmail");
+      toast.info("Opened in Gmail Web ready to send!");
     } finally {
       setEmailSending(false);
     }
