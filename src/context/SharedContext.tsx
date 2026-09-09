@@ -372,7 +372,7 @@ export function SharedProvider({ children }: { children: ReactNode }) {
           // Filter locally for role
           const filtered = user.role === "hr"
             ? apiCandidates
-            : apiCandidates.filter(c => c.email === user.email);
+            : apiCandidates.filter((c: CandidateApiData) => c.email === user.email);
           setCandidates(filtered.map(mapApiCandidate));
           setCandidatesError(null);
         } catch (err: unknown) {
@@ -581,10 +581,12 @@ export function SharedProvider({ children }: { children: ReactNode }) {
     if (!tasksReady) return;
     localStorage.setItem(LS_TASKS, JSON.stringify(tasks));
     if (useSupabase && tasks.length > 0) {
-      import("../utils/supabase").then(({ supabase }) => {
-        supabase.from("tasks").upsert(tasks.map(toApiTask), { onConflict: "id" })
-          .then(() => {})
-          .catch((err) => console.warn("Failed to sync tasks to Supabase:", err));
+      import("../utils/supabase").then(async ({ supabase }) => {
+        try {
+          await supabase.from("tasks").upsert(tasks.map(toApiTask), { onConflict: "id" });
+        } catch (err: unknown) {
+          console.warn("Failed to sync tasks to Supabase:", err);
+        }
       });
     }
   }, [tasks, tasksReady, useSupabase]);
@@ -1296,7 +1298,7 @@ export function SharedProvider({ children }: { children: ReactNode }) {
             
             setEmployees(prev => [...prev, {
               id: newAccount.id,
-              name: newAccount.name,
+              name: newAccount.name || "",
               email: newAccount.email!,
               jobTitle: newAccount.job_title!,
               role: newAccount.role === "admin" ? "Super Admin" : newAccount.role === "hr" ? "HR Manager" : "Employee",

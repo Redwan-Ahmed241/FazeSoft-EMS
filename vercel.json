@@ -1,6 +1,18 @@
 {
   "rewrites": [
     {
+      "source": "/ems/assets/(.*)",
+      "destination": "/assets/$1"
+    },
+    {
+      "source": "/ems/(.*\\.[a-zA-Z0-9]+)",
+      "destination": "/$1"
+    },
+    {
+      "source": "/ems/(.*)",
+      "destination": "/index.html"
+    },
+    {
       "source": "/(.*)",
       "destination": "/index.html"
     }

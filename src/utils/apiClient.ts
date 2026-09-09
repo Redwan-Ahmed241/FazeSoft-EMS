@@ -40,7 +40,8 @@ class ApiClient {
     if (response.status === 401) {
       localStorage.removeItem('token');
       localStorage.removeItem('user');
-      window.location.href = '/';
+      const base = window.location.pathname.startsWith('/ems') ? '/ems/' : '/';
+      window.location.href = base;
       throw new Error('Session expired. Please login again.');
     }
 
