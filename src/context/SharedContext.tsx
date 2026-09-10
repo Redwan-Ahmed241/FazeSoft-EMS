@@ -345,7 +345,7 @@ export function SharedProvider({ children }: { children: ReactNode }) {
           let query = supabase.from("candidates").select("*");
           
           // RBAC listing check
-          if (user.role !== "hr") {
+          if (!["CTO", "HR", "HR_Manager", "Head_of_Operations"].includes(user.role)) {
             query = query.eq("email", user.email);
           } else {
             query = query.order("ai_score", { ascending: false });
@@ -370,7 +370,7 @@ export function SharedProvider({ children }: { children: ReactNode }) {
         try {
           const apiCandidates = await candidateApi.list();
           // Filter locally for role
-          const filtered = user.role === "hr"
+          const filtered = ["CTO", "HR", "HR_Manager", "Head_of_Operations"].includes(user.role)
             ? apiCandidates
             : apiCandidates.filter((c: CandidateApiData) => c.email === user.email);
           setCandidates(filtered.map(mapApiCandidate));
@@ -396,7 +396,7 @@ export function SharedProvider({ children }: { children: ReactNode }) {
           const { supabase } = await import("../utils/supabase");
           let query = supabase.from("interviews").select("*");
           
-          if (user.role !== "hr") {
+          if (!["CTO", "HR", "HR_Manager", "Head_of_Operations"].includes(user.role)) {
             query = query.ilike("candidate_email", user.email);
           }
 
@@ -410,7 +410,7 @@ export function SharedProvider({ children }: { children: ReactNode }) {
         const stored = localStorage.getItem(LS_INTERVIEWS);
         if (stored) {
           const all = JSON.parse(stored).map(mapApiInterview);
-          const filtered = user.role === "hr"
+          const filtered = ["CTO", "HR", "HR_Manager", "Head_of_Operations"].includes(user.role)
             ? all
             : all.filter((i: any) => i.candidateEmail?.toLowerCase() === user.email?.toLowerCase());
           setInterviews(filtered);
@@ -461,7 +461,7 @@ export function SharedProvider({ children }: { children: ReactNode }) {
           const { data, error } = await supabase
             .from("profiles")
             .select("id, name, email, job_title, role, avatar, department, employee_id, joining_date, employment_status")
-            .neq("role", "candidate");
+            .neq("role", "Candidate");
             
           if (error) throw error;
           
@@ -471,35 +471,7 @@ export function SharedProvider({ children }: { children: ReactNode }) {
               name: p.name || "Unknown",
               email: p.email || "",
               jobTitle: p.job_title || "Staff",
-              role: p.role === "admin" ? "Super Admin" : p.role === "hr" ? "HR Manager" : p.role === "employee" ? "Employee" : "Viewer",
-              status: p.employment_status || "Permanent",
-              statusColor: "bg-green-100 text-green-700",
-              securityStatus: "Verified",
-              avatar: p.avatar || "",
-              department: p.department || "",
-              employee_id: p.employee_id || "",
-              joining_date: p.joining_date || "",
-              employment_status: p.employment_status || "Active",
-            }));
-            setEmployees(mapped);
-            return;
-          }
-          // If the Supabase profiles table has no staff rows, fall back to
-          // local accounts (mirrors the fallback used for jobs/notifications).
-        }
-        {
-          // Local storage fallback
-          const accountsStr = localStorage.getItem("fazemate_accounts");
-          if (accountsStr) {
-            const accounts = JSON.parse(accountsStr);
-            const staff = accounts.filter((a: any) => a.role !== "candidate");
-            if (staff.length > 0) {
-              const mapped: EmployeeData[] = staff.map((p: any, idx: number) => ({
-                id: p.id || p.email || idx,
-                name: p.name || "Unknown",
-                email: p.email || "",
-                jobTitle: p.jobTitle || p.job_title || "Staff",
-                role: p.role === "admin" ? "Super Admin" : p.role === "hr" ? "HR Manager" : p.role === "employee" ? "Employee" : "Viewer",
+              role: p.role || "Intern",
                 status: p.employment_status || "Permanent",
                 statusColor: "bg-green-100 text-green-700",
                 securityStatus: "Verified",
@@ -544,7 +516,7 @@ export function SharedProvider({ children }: { children: ReactNode }) {
       let changed = false;
       // Seed tasks for every staff member that doesn't have any yet
       const staff: TaskAssigneeSeed[] = employees
-        .filter((e) => e.email && e.role !== "Viewer")
+        .filter((e) => e.email && e.role !== "Candidate")
         .map((e) => ({ name: e.name, email: e.email, department: e.department }));
       for (const emp of staff) {
         const key = emp.email.toLowerCase();
@@ -555,7 +527,7 @@ export function SharedProvider({ children }: { children: ReactNode }) {
         }
       }
       // Ensure the logged-in employee always has tasks (even without a directory row)
-      if (user.role === "employee" && user.email) {
+      if (["CTO", "Head_of_Operations", "HR", "HR_Manager", "Senior_Frontend", "Senior_Backend", "Junior_Frontend", "Junior_Backend", "DBA", "DBA_Intern", "Frontend_Intern", "Backend_Intern", "Intern"].includes(user.role) && user.email) {
         const key = user.email.toLowerCase();
         const has = list.some((t) => t.assigneeEmail.toLowerCase() === key);
         if (!has) {
@@ -1220,7 +1192,7 @@ export function SharedProvider({ children }: { children: ReactNode }) {
         setEmployees,
         addEmployee: async (emp, rawPassword) => {
           // Employee creation logic to be called by Admin
-          const newRole = emp.role === "Super Admin" ? "admin" : emp.role === "HR Manager" ? "hr" : emp.role === "Employee" ? "employee" : "employee";
+          const newRole = emp.role || "Intern";
           if (useSupabase) {
             const { supabase } = await import("../utils/supabase");
             // 1) Create the employee LOGIN account on the FastAPI backend (users table)
@@ -1257,7 +1229,7 @@ export function SharedProvider({ children }: { children: ReactNode }) {
                 name: data?.[0]?.name || emp.name || "Unknown",
                 email: data?.[0]?.email || emp.email || "",
                 jobTitle: data?.[0]?.job_title || emp.jobTitle || "Staff",
-                role: newRole === "admin" ? "Super Admin" : newRole === "hr" ? "HR Manager" : "Employee",
+                role: emp.role || "Intern",
                 status: data?.[0]?.employment_status || emp.status || "Permanent",
                 statusColor: "bg-green-100 text-green-700",
                 securityStatus: "Pending",
@@ -1271,7 +1243,7 @@ export function SharedProvider({ children }: { children: ReactNode }) {
                 name: emp.name || "Unknown",
                 email: emp.email || "",
                 jobTitle: emp.jobTitle || "Staff",
-                role: newRole === "admin" ? "Super Admin" : newRole === "hr" ? "HR Manager" : "Employee",
+                role: emp.role || "Intern",
                 status: emp.status || "Permanent",
                 statusColor: "bg-green-100 text-green-700",
                 securityStatus: "Pending",
@@ -1301,7 +1273,7 @@ export function SharedProvider({ children }: { children: ReactNode }) {
               name: newAccount.name || "",
               email: newAccount.email!,
               jobTitle: newAccount.job_title!,
-              role: newAccount.role === "admin" ? "Super Admin" : newAccount.role === "hr" ? "HR Manager" : "Employee",
+              role: emp.role || "Intern",
               status: newAccount.employment_status,
               statusColor: "bg-green-100 text-green-700",
               securityStatus: "Pending",
@@ -1311,7 +1283,7 @@ export function SharedProvider({ children }: { children: ReactNode }) {
           }
         },
         updateEmployeeRole: async (id, newRole) => {
-          const dbRole = newRole === "Super Admin" ? "admin" : newRole === "HR Manager" ? "hr" : newRole === "Employee" ? "employee" : "candidate";
+          const dbRole = newRole || "Intern";
           
           if (useSupabase) {
             const { supabase } = await import("../utils/supabase");

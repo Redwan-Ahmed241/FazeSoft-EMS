@@ -507,7 +507,7 @@ function CandidateDashboard() {
 
 export function Dashboard() {
   const { user } = useAuth();
-  if (user?.role === "hr" || user?.role === "admin") return <HRDashboard />;
-  if (user?.role === "employee") return <EmployeeDashboard />;
-  return <CandidateDashboard />;
+  if (["CTO", "Head_of_Operations", "HR", "HR_Manager"].includes(user?.role || "")) return <HRDashboard />;
+  if (user?.role === "Candidate") return <CandidateDashboard />;
+  return <EmployeeDashboard />;
 }

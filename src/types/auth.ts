@@ -1,6 +1,6 @@
 // TypeScript interfaces matching app/schemas/user.py in the FastAPI backend.
 
-export type UserRole = "hr" | "candidate" | "admin" | "employee";
+export type UserRole = "CTO" | "Head_of_Operations" | "HR" | "HR_Manager" | "Senior_Frontend" | "Senior_Backend" | "Junior_Frontend" | "Junior_Backend" | "DBA" | "DBA_Intern" | "Frontend_Intern" | "Backend_Intern" | "Intern" | "Candidate";
 
 export interface UserLogin {
   email: string;

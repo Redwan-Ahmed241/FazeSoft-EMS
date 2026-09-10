@@ -122,7 +122,7 @@ export function Profile() {
         last_salary: lastSalary,
       });
 
-      if (user?.role === "candidate") {
+      if (user?.role === "Candidate") {
         const matched = candidates.find((c) => c.email === user.email);
         await addCandidate({
           name: fullName,
@@ -174,14 +174,14 @@ export function Profile() {
           </div>
           <div className="flex-1 text-center md:text-left">
             <h2 className="text-xl font-bold text-foreground">{firstName} {lastName}</h2>
-            <p className="text-sm text-muted-foreground">{jobTitle || (user?.role === "hr" ? "HR Professional" : user?.role === "employee" ? "Employee" : user?.role === "admin" ? "Administrator" : "Candidate")}</p>
+            <p className="text-sm text-muted-foreground">{jobTitle || (user?.role === "CTO" ? "CTO" : user?.role === "HR" ? "HR Professional" : user?.role === "HR_Manager" ? "HR Manager" : user?.role === "Head_of_Operations" ? "Head of Operations" : user?.role?.includes("Senior") ? "Senior Developer" : user?.role?.includes("Junior") ? "Junior Developer" : user?.role?.includes("Intern") ? "Intern" : user?.role === "DBA" ? "Database Administrator" : user?.role === "Candidate" ? "Candidate" : "Employee")}</p>
             <div className="mt-2 flex flex-wrap gap-2 justify-center md:justify-start">
               <span className="inline-flex items-center gap-1 rounded-full bg-green-100 px-3 py-1 text-xs font-medium text-green-700">
                 <Shield className="h-3 w-3" />
                 Verified Account
               </span>
               <span className="inline-flex items-center gap-1 rounded-full bg-purple-100 px-3 py-1 text-xs font-medium text-purple-700">
-                {user?.role === "hr" ? "HR Manager" : user?.role === "employee" ? "Employee Portal" : user?.role === "admin" ? "Admin Portal" : "Candidate Portal"}
+                {user?.role === "CTO" ? "CTO Portal" : user?.role === "HR" ? "HR Portal" : user?.role === "HR_Manager" ? "HR Manager Portal" : user?.role === "Head_of_Operations" ? "Head of Ops Portal" : user?.role === "Candidate" ? "Candidate Portal" : `${user?.role?.replace(/_/g, " ") || "Employee"} Portal`}
               </span>
             </div>
           </div>

@@ -88,7 +88,7 @@ export function ResumeParsing() {
   const { addCandidate } = useSharedContext();
   const { user, updateProfile } = useAuth();
   const { applications, updateApplicationStatus } = usePortal();
-  const isCandidate = user?.role === "candidate";
+  const isCandidate = user?.role === "Candidate";
   const [resumes, setResumes] = useState<ParsedResume[]>([]);
   const [isDragging, setIsDragging] = useState(false);
   const [selectedResume, setSelectedResume] = useState<ParsedResume | null>(null);

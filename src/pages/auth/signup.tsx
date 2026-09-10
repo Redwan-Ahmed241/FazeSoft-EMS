@@ -51,7 +51,7 @@ export default function Signup() {
   const [showPwd, setShowPwd]   = useState(false);
   const [loading, setLoading]   = useState(false);
   const [error, setError]       = useState('');
-  const [role, setRole]         = useState<UserRole>('candidate');
+  const [role, setRole]         = useState<UserRole>('Candidate');
   const [form, setForm]         = useState({
     firstName: '', lastName: '', email: '', password: '', confirmPassword: '',
   });
@@ -229,22 +229,112 @@ export default function Signup() {
             <div style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
               <p style={{ color: 'rgba(255,255,255,0.6)', fontSize: '13px', margin: 0 }}>Sign up as:</p>
               <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '8px' }}>
-                <button type="button" onClick={() => setRole('hr')} style={{
+                <button type="button" onClick={() => setRole('CTO')} style={{
                   display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '6px',
                   padding: '10px 4px', borderRadius: '12px', cursor: 'pointer', fontSize: '12px', fontWeight: 600,
-                  background: role === 'hr' ? '#fff' : 'rgba(255,255,255,0.08)',
-                  color: role === 'hr' ? '#000' : 'rgba(255,255,255,0.7)',
-                  border: role === 'hr' ? '2px solid #fff' : '1px solid rgba(255,255,255,0.15)',
+                  background: role === 'CTO' ? '#fff' : 'rgba(255,255,255,0.08)',
+                  color: role === 'CTO' ? '#000' : 'rgba(255,255,255,0.7)',
+                  border: role === 'CTO' ? '2px solid #fff' : '1px solid rgba(255,255,255,0.15)',
+                  transition: 'all 0.2s',
+                }}>
+                  <Shield size={12} /> CTO
+                </button>
+                <button type="button" onClick={() => setRole('HR')} style={{
+                  display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '6px',
+                  padding: '10px 4px', borderRadius: '12px', cursor: 'pointer', fontSize: '12px', fontWeight: 600,
+                  background: role === 'HR' ? '#fff' : 'rgba(255,255,255,0.08)',
+                  color: role === 'HR' ? '#000' : 'rgba(255,255,255,0.7)',
+                  border: role === 'HR' ? '2px solid #fff' : '1px solid rgba(255,255,255,0.15)',
+                  transition: 'all 0.2s',
+                }}>
+                  <Shield size={12} /> HR
+                </button>
+                <button type="button" onClick={() => setRole('HR_Manager')} style={{
+                  display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '6px',
+                  padding: '10px 4px', borderRadius: '12px', cursor: 'pointer', fontSize: '12px', fontWeight: 600,
+                  background: role === 'HR_Manager' ? '#fff' : 'rgba(255,255,255,0.08)',
+                  color: role === 'HR_Manager' ? '#000' : 'rgba(255,255,255,0.7)',
+                  border: role === 'HR_Manager' ? '2px solid #fff' : '1px solid rgba(255,255,255,0.15)',
                   transition: 'all 0.2s',
                 }}>
                   <Shield size={12} /> HR Manager
                 </button>
-                <button type="button" onClick={() => setRole('candidate')} style={{
+                <button type="button" onClick={() => setRole('Head_of_Operations')} style={{
                   display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '6px',
                   padding: '10px 4px', borderRadius: '12px', cursor: 'pointer', fontSize: '12px', fontWeight: 600,
-                  background: role === 'candidate' ? '#fff' : 'rgba(255,255,255,0.08)',
-                  color: role === 'candidate' ? '#000' : 'rgba(255,255,255,0.7)',
-                  border: role === 'candidate' ? '2px solid #fff' : '1px solid rgba(255,255,255,0.15)',
+                  background: role === 'Head_of_Operations' ? '#fff' : 'rgba(255,255,255,0.08)',
+                  color: role === 'Head_of_Operations' ? '#000' : 'rgba(255,255,255,0.7)',
+                  border: role === 'Head_of_Operations' ? '2px solid #fff' : '1px solid rgba(255,255,255,0.15)',
+                  transition: 'all 0.2s',
+                }}>
+                  <Shield size={12} /> Head of Ops
+                </button>
+                <button type="button" onClick={() => setRole('Senior_Frontend')} style={{
+                  display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '6px',
+                  padding: '10px 4px', borderRadius: '12px', cursor: 'pointer', fontSize: '12px', fontWeight: 600,
+                  background: role === 'Senior_Frontend' ? '#fff' : 'rgba(255,255,255,0.08)',
+                  color: role === 'Senior_Frontend' ? '#000' : 'rgba(255,255,255,0.7)',
+                  border: role === 'Senior_Frontend' ? '2px solid #fff' : '1px solid rgba(255,255,255,0.15)',
+                  transition: 'all 0.2s',
+                }}>
+                  <Users size={12} /> Sr Frontend
+                </button>
+                <button type="button" onClick={() => setRole('Senior_Backend')} style={{
+                  display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '6px',
+                  padding: '10px 4px', borderRadius: '12px', cursor: 'pointer', fontSize: '12px', fontWeight: 600,
+                  background: role === 'Senior_Backend' ? '#fff' : 'rgba(255,255,255,0.08)',
+                  color: role === 'Senior_Backend' ? '#000' : 'rgba(255,255,255,0.7)',
+                  border: role === 'Senior_Backend' ? '2px solid #fff' : '1px solid rgba(255,255,255,0.15)',
+                  transition: 'all 0.2s',
+                }}>
+                  <Users size={12} /> Sr Backend
+                </button>
+                <button type="button" onClick={() => setRole('Junior_Frontend')} style={{
+                  display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '6px',
+                  padding: '10px 4px', borderRadius: '12px', cursor: 'pointer', fontSize: '12px', fontWeight: 600,
+                  background: role === 'Junior_Frontend' ? '#fff' : 'rgba(255,255,255,0.08)',
+                  color: role === 'Junior_Frontend' ? '#000' : 'rgba(255,255,255,0.7)',
+                  border: role === 'Junior_Frontend' ? '2px solid #fff' : '1px solid rgba(255,255,255,0.15)',
+                  transition: 'all 0.2s',
+                }}>
+                  <Users size={12} /> Jr Frontend
+                </button>
+                <button type="button" onClick={() => setRole('Junior_Backend')} style={{
+                  display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '6px',
+                  padding: '10px 4px', borderRadius: '12px', cursor: 'pointer', fontSize: '12px', fontWeight: 600,
+                  background: role === 'Junior_Backend' ? '#fff' : 'rgba(255,255,255,0.08)',
+                  color: role === 'Junior_Backend' ? '#000' : 'rgba(255,255,255,0.7)',
+                  border: role === 'Junior_Backend' ? '2px solid #fff' : '1px solid rgba(255,255,255,0.15)',
+                  transition: 'all 0.2s',
+                }}>
+                  <Users size={12} /> Jr Backend
+                </button>
+                <button type="button" onClick={() => setRole('DBA')} style={{
+                  display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '6px',
+                  padding: '10px 4px', borderRadius: '12px', cursor: 'pointer', fontSize: '12px', fontWeight: 600,
+                  background: role === 'DBA' ? '#fff' : 'rgba(255,255,255,0.08)',
+                  color: role === 'DBA' ? '#000' : 'rgba(255,255,255,0.7)',
+                  border: role === 'DBA' ? '2px solid #fff' : '1px solid rgba(255,255,255,0.15)',
+                  transition: 'all 0.2s',
+                }}>
+                  <Users size={12} /> DBA
+                </button>
+                <button type="button" onClick={() => setRole('Intern')} style={{
+                  display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '6px',
+                  padding: '10px 4px', borderRadius: '12px', cursor: 'pointer', fontSize: '12px', fontWeight: 600,
+                  background: role === 'Intern' ? '#fff' : 'rgba(255,255,255,0.08)',
+                  color: role === 'Intern' ? '#000' : 'rgba(255,255,255,0.7)',
+                  border: role === 'Intern' ? '2px solid #fff' : '1px solid rgba(255,255,255,0.15)',
+                  transition: 'all 0.2s',
+                }}>
+                  <Users size={12} /> Intern
+                </button>
+                <button type="button" onClick={() => setRole('Candidate')} style={{
+                  display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '6px',
+                  padding: '10px 4px', borderRadius: '12px', cursor: 'pointer', fontSize: '12px', fontWeight: 600,
+                  background: role === 'Candidate' ? '#fff' : 'rgba(255,255,255,0.08)',
+                  color: role === 'Candidate' ? '#000' : 'rgba(255,255,255,0.7)',
+                  border: role === 'Candidate' ? '2px solid #fff' : '1px solid rgba(255,255,255,0.15)',
                   transition: 'all 0.2s',
                 }}>
                   <ClipboardList size={12} /> Candidate

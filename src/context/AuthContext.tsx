@@ -1,7 +1,7 @@
 import React, { createContext, useContext, useState, useEffect, ReactNode } from 'react';
 import { authApi } from '../api/auth';
 
-export type UserRole = 'hr' | 'candidate' | 'admin' | 'employee';
+export type UserRole = 'CTO' | 'Head_of_Operations' | 'HR' | 'HR_Manager' | 'Senior_Frontend' | 'Senior_Backend' | 'Junior_Frontend' | 'Junior_Backend' | 'DBA' | 'DBA_Intern' | 'Frontend_Intern' | 'Backend_Intern' | 'Intern' | 'Candidate';
 
 export interface User {
   email: string;
@@ -70,7 +70,7 @@ function toUser(u: {
     id: u.id,
     email: u.email,
     name: u.full_name || '',
-    role: (u.role as UserRole) ?? 'employee',
+    role: (u.role as UserRole) ?? 'Intern',
     phone: u.phone || '',
     location: u.location || '',
     job_title: u.job_title || '',
@@ -125,7 +125,7 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
     setUser(u);
   };
 
-  const signup = async (email: string, password: string, name: string, role: UserRole = 'candidate') => {
+  const signup = async (email: string, password: string, name: string, role: UserRole = 'Candidate') => {
     const u = await backendSignup(email, password, name, role);
     setUser(u);
     return { needsVerification: false };

@@ -48,6 +48,6 @@ export interface DbUser {
   id: string;
   email: string;
   name: string;
-  role: 'hr' | 'candidate';
+  role: 'CTO' | 'Head_of_Operations' | 'HR' | 'HR_Manager' | 'Senior_Frontend' | 'Senior_Backend' | 'Junior_Frontend' | 'Junior_Backend' | 'DBA' | 'DBA_Intern' | 'Frontend_Intern' | 'Backend_Intern' | 'Intern' | 'Candidate';
   created_at?: string;
 }

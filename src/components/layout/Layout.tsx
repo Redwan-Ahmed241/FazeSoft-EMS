@@ -45,23 +45,27 @@ function getNotifIcon(type: string): string {
   return "i";
 }
 
+const ALL_ROLES = ["CTO", "Head_of_Operations", "HR", "HR_Manager", "Senior_Frontend", "Senior_Backend", "Junior_Frontend", "Junior_Backend", "DBA", "DBA_Intern", "Frontend_Intern", "Backend_Intern", "Intern", "Candidate"];
+const MGMT_ROLES = ["CTO", "Head_of_Operations", "HR", "HR_Manager"];
+const EMPLOYEE_ROLES = ["CTO", "Head_of_Operations", "HR", "HR_Manager", "Senior_Frontend", "Senior_Backend", "Junior_Frontend", "Junior_Backend", "DBA", "DBA_Intern", "Frontend_Intern", "Backend_Intern", "Intern"];
+
 const allMenuItems = [
-  { path: "/dashboard",               icon: LayoutDashboard, label: "Dashboard",  roles: ["hr", "candidate", "admin", "employee"] },
-  { path: "/dashboard/projects",      icon: Briefcase,       label: "Projects",   roles: ["admin"] },
-  { path: "/dashboard/projects/create", icon: FolderPlus,    label: "New Project", roles: ["hr", "admin"] },
-  { path: "/dashboard/candidate",     icon: UserCheck,       label: "Candidates", roles: ["hr", "admin"] },
-  { path: "/dashboard/employees",     icon: Users,           label: "Employees",  roles: ["hr", "admin"] },
-  { path: "/dashboard/calendar",      icon: Calendar,        label: "Interviews", roles: ["hr", "admin"] },
-  { path: "/dashboard/calendar",      icon: Calendar,        label: "Calendar",   roles: ["candidate"] },
-  { path: "/dashboard/job-posting",   icon: Briefcase,       label: "Analytics",  roles: ["hr", "admin"] },
-  { path: "/dashboard/resume-parsing",icon: FileSearch,      label: "Analyse Resumes",  roles: ["hr", "admin"] },
-  { path: "/dashboard/resume-parsing",icon: FileSearch,      label: "My Resume",  roles: ["candidate"] },
-  { path: "/dashboard/tasks",         icon: ListTodo,       label: "My Tasks",    roles: ["employee"] },
-  { path: "/dashboard/team",          icon: Users,           label: "Team Progress", roles: ["employee"] },
-  { path: "/dashboard/history",       icon: HistoryIcon,     label: "My History",  roles: ["employee"] },
-  { path: "/dashboard/report",        icon: FileText,        label: "Reports",    roles: ["hr", "admin"] },
-  { path: "/dashboard/profile",       icon: User,            label: "Profile",    roles: ["hr", "candidate", "admin", "employee"] },
-  { path: "/dashboard/settings",      icon: SettingsIcon,    label: "Settings",   roles: ["hr", "candidate", "admin", "employee"] },
+  { path: "/dashboard",               icon: LayoutDashboard, label: "Dashboard",  roles: ALL_ROLES },
+  { path: "/dashboard/projects",      icon: Briefcase,       label: "Projects",   roles: ["CTO", "Head_of_Operations"] },
+  { path: "/dashboard/projects/create", icon: FolderPlus,    label: "New Project", roles: MGMT_ROLES },
+  { path: "/dashboard/candidate",     icon: UserCheck,       label: "Candidates", roles: MGMT_ROLES },
+  { path: "/dashboard/employees",     icon: Users,           label: "Employees",  roles: ["CTO", "HR", "HR_Manager"] },
+  { path: "/dashboard/calendar",      icon: Calendar,        label: "Interviews", roles: MGMT_ROLES },
+  { path: "/dashboard/calendar",      icon: Calendar,        label: "Calendar",   roles: ["Candidate"] },
+  { path: "/dashboard/job-posting",   icon: Briefcase,       label: "Analytics",  roles: MGMT_ROLES },
+  { path: "/dashboard/resume-parsing",icon: FileSearch,      label: "Analyse Resumes",  roles: MGMT_ROLES },
+  { path: "/dashboard/resume-parsing",icon: FileSearch,      label: "My Resume",  roles: ["Candidate"] },
+  { path: "/dashboard/tasks",         icon: ListTodo,       label: "My Tasks",    roles: EMPLOYEE_ROLES },
+  { path: "/dashboard/team",          icon: Users,           label: "Team Progress", roles: EMPLOYEE_ROLES },
+  { path: "/dashboard/history",       icon: HistoryIcon,     label: "My History",  roles: EMPLOYEE_ROLES },
+  { path: "/dashboard/report",        icon: FileText,        label: "Reports",    roles: MGMT_ROLES },
+  { path: "/dashboard/profile",       icon: User,            label: "Profile",    roles: ALL_ROLES },
+  { path: "/dashboard/settings",      icon: SettingsIcon,    label: "Settings",   roles: ALL_ROLES },
 ];
 
 export function Layout() {
@@ -71,8 +75,8 @@ export function Layout() {
   const [showNotifications, setShowNotifications] = useState(false);
   const { notifications, unreadCount, markAsRead, markAllAsRead } = useSharedContext();
 
-  const isHR = user?.role === "hr" || user?.role === "admin";
-  const role = user?.role || "candidate";
+  const isHR = ["CTO", "HR", "HR_Manager", "Head_of_Operations"].includes(user?.role || "");
+  const role = user?.role || "Candidate";
 
   // Deduplicate paths per role and filter by current user role
   const seen: string[] = [];
@@ -134,20 +138,60 @@ export function Layout() {
               </div>
               <div className="text-[11px] text-muted-foreground truncate">{user?.email}</div>
               <div className="flex items-center gap-1.5 mt-0.5">
-                {user?.role === "admin" ? (
-                  <span className="inline-flex items-center gap-1 rounded-full bg-red-100 px-2 py-0.5 text-[10px] font-semibold text-red-700">
-                    <Shield className="h-2.5 w-2.5" /> Admin User
+                {user?.role === "CTO" ? (
+                  <span className="inline-flex items-center gap-1 rounded-full bg-red-600 px-2 py-0.5 text-[10px] font-semibold text-white">
+                    <Shield className="h-2.5 w-2.5" /> CTO
                   </span>
-                ) : user?.role === "hr" ? (
-                  <span className="inline-flex items-center gap-1 rounded-full bg-primary/10 px-2 py-0.5 text-[10px] font-semibold text-primary">
+                ) : user?.role === "Head_of_Operations" ? (
+                  <span className="inline-flex items-center gap-1 rounded-full bg-purple-700 px-2 py-0.5 text-[10px] font-semibold text-white">
+                    <Shield className="h-2.5 w-2.5" /> Head of Ops
+                  </span>
+                ) : user?.role === "HR" ? (
+                  <span className="inline-flex items-center gap-1 rounded-full bg-pink-100 px-2 py-0.5 text-[10px] font-semibold text-pink-700">
+                    <Shield className="h-2.5 w-2.5" /> HR
+                  </span>
+                ) : user?.role === "HR_Manager" ? (
+                  <span className="inline-flex items-center gap-1 rounded-full bg-pink-600 px-2 py-0.5 text-[10px] font-semibold text-white">
                     <Shield className="h-2.5 w-2.5" /> HR Manager
                   </span>
-                ) : user?.role === "employee" ? (
-                  <span className="inline-flex items-center gap-1 rounded-full bg-green-100 px-2 py-0.5 text-[10px] font-semibold text-green-700">
-                    <Users className="h-2.5 w-2.5" /> Employee
+                ) : user?.role === "Senior_Frontend" ? (
+                  <span className="inline-flex items-center gap-1 rounded-full bg-blue-600 px-2 py-0.5 text-[10px] font-semibold text-white">
+                    <Users className="h-2.5 w-2.5" /> Sr Frontend
+                  </span>
+                ) : user?.role === "Senior_Backend" ? (
+                  <span className="inline-flex items-center gap-1 rounded-full bg-indigo-600 px-2 py-0.5 text-[10px] font-semibold text-white">
+                    <Users className="h-2.5 w-2.5" /> Sr Backend
+                  </span>
+                ) : user?.role === "Junior_Frontend" ? (
+                  <span className="inline-flex items-center gap-1 rounded-full bg-sky-100 px-2 py-0.5 text-[10px] font-semibold text-sky-700">
+                    <Users className="h-2.5 w-2.5" /> Jr Frontend
+                  </span>
+                ) : user?.role === "Junior_Backend" ? (
+                  <span className="inline-flex items-center gap-1 rounded-full bg-violet-100 px-2 py-0.5 text-[10px] font-semibold text-violet-700">
+                    <Users className="h-2.5 w-2.5" /> Jr Backend
+                  </span>
+                ) : user?.role === "DBA" ? (
+                  <span className="inline-flex items-center gap-1 rounded-full bg-teal-600 px-2 py-0.5 text-[10px] font-semibold text-white">
+                    <Users className="h-2.5 w-2.5" /> DBA
+                  </span>
+                ) : user?.role === "DBA_Intern" ? (
+                  <span className="inline-flex items-center gap-1 rounded-full bg-cyan-100 px-2 py-0.5 text-[10px] font-semibold text-cyan-700">
+                    <Users className="h-2.5 w-2.5" /> DBA Intern
+                  </span>
+                ) : user?.role === "Frontend_Intern" ? (
+                  <span className="inline-flex items-center gap-1 rounded-full bg-blue-100 px-2 py-0.5 text-[10px] font-semibold text-blue-700">
+                    <Users className="h-2.5 w-2.5" /> FE Intern
+                  </span>
+                ) : user?.role === "Backend_Intern" ? (
+                  <span className="inline-flex items-center gap-1 rounded-full bg-indigo-100 px-2 py-0.5 text-[10px] font-semibold text-indigo-700">
+                    <Users className="h-2.5 w-2.5" /> BE Intern
+                  </span>
+                ) : user?.role === "Intern" ? (
+                  <span className="inline-flex items-center gap-1 rounded-full bg-amber-100 px-2 py-0.5 text-[10px] font-semibold text-amber-700">
+                    <Users className="h-2.5 w-2.5" /> Intern
                   </span>
                 ) : (
-                  <span className="inline-flex items-center gap-1 rounded-full bg-blue-100 px-2 py-0.5 text-[10px] font-semibold text-blue-700">
+                  <span className="inline-flex items-center gap-1 rounded-full bg-green-100 px-2 py-0.5 text-[10px] font-semibold text-green-700">
                     <ClipboardList className="h-2.5 w-2.5" /> Candidate
                   </span>
                 )}
@@ -302,26 +346,36 @@ export function Layout() {
           </div>
 
           {/* Role badge in header */}
-          <span className={`hidden sm:inline-flex items-center gap-1.5 rounded-full px-3 py-1 text-xs font-semibold ${user?.role === "admin" ? "bg-red-100 text-red-700" : isHR ? "bg-primary/10 text-primary" : user?.role === "employee" ? "bg-green-100 text-green-700" : "bg-blue-100 text-blue-700"}`}>
-            {user?.role === "admin" ? (
+          <span className={`hidden sm:inline-flex items-center gap-1.5 rounded-full px-3 py-1 text-xs font-semibold ${["CTO"].includes(user?.role || "") ? "bg-red-600 text-white" : ["HR", "HR_Manager", "Head_of_Operations"].includes(user?.role || "") ? "bg-pink-100 text-pink-700" : user?.role === "Candidate" ? "bg-green-100 text-green-700" : "bg-blue-100 text-blue-700"}`}>
+            {user?.role === "CTO" ? (
               <>
                 <Shield className="h-3 w-3" />
-                Admin Portal
+                CTO Portal
               </>
-            ) : isHR ? (
+            ) : user?.role === "Head_of_Operations" ? (
+              <>
+                <Shield className="h-3 w-3" />
+                Head of Ops Portal
+              </>
+            ) : user?.role === "HR" ? (
               <>
                 <Shield className="h-3 w-3" />
                 HR Portal
               </>
-            ) : user?.role === "employee" ? (
+            ) : user?.role === "HR_Manager" ? (
               <>
-                <Users className="h-3 w-3" />
-                Employee Portal
+                <Shield className="h-3 w-3" />
+                HR Manager Portal
               </>
-            ) : (
+            ) : user?.role === "Candidate" ? (
               <>
                 <ClipboardList className="h-3 w-3" />
                 Candidate Portal
+              </>
+            ) : (
+              <>
+                <Users className="h-3 w-3" />
+                {user?.role?.replace(/_/g, " ") || "Employee"} Portal
               </>
             )}
           </span>

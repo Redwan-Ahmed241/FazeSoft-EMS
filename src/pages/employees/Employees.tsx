@@ -26,17 +26,25 @@ const allPermissions = [
 ];
 
 const rolesData = [
-  { id: 1, role: "Super Admin", permissions: ["All Access"], grantedPermissions: allPermissions, color: "bg-red-100 text-red-700", description: "Full system access with all administrative privileges" },
-  { id: 2, role: "HR Manager", permissions: ["View", "Edit", "Delete"], grantedPermissions: ["View Candidates", "Edit Candidates", "Delete Candidates", "View Jobs", "Create Jobs", "Edit Jobs", "Delete Jobs", "Schedule Interviews", "View Reports", "Export Reports"], color: "bg-purple-100 text-purple-700", description: "Manage hiring processes, candidates, and reporting" },
-  { id: 3, role: "Recruiter", permissions: ["View", "Edit"], grantedPermissions: ["View Candidates", "Edit Candidates", "View Jobs", "Create Jobs", "Edit Jobs", "Schedule Interviews", "View Reports"], color: "bg-blue-100 text-blue-700", description: "Source, screen, and manage candidate pipelines" },
-  { id: 4, role: "Interviewer", permissions: ["View", "Schedule"], grantedPermissions: ["View Candidates", "View Jobs", "Schedule Interviews"], color: "bg-green-100 text-green-700", description: "Conduct interviews and provide candidate feedback" },
-  { id: 5, role: "Employee", permissions: ["View Profile"], grantedPermissions: ["View Profile"], color: "bg-teal-100 text-teal-700", description: "Standard employee access" },
-  { id: 6, role: "Viewer", permissions: ["View Only"], grantedPermissions: ["View Candidates", "View Jobs", "View Reports"], color: "bg-gray-100 text-gray-700", description: "Read-only access to recruitment data" },
+  { id: 1, role: "CTO", permissions: ["All Access"], grantedPermissions: allPermissions, color: "bg-red-600 text-white", description: "Full system access with all administrative privileges" },
+  { id: 2, role: "Head_of_Operations", permissions: ["Management"], grantedPermissions: ["View Candidates", "Edit Candidates", "View Jobs", "Create Jobs", "Edit Jobs", "Schedule Interviews", "View Reports", "Export Reports", "Manage Users", "Create Project", "View Projects"], color: "bg-purple-700 text-white", description: "Oversee operations, projects, and team management" },
+  { id: 3, role: "HR", permissions: ["View", "Edit", "Delete"], grantedPermissions: ["View Candidates", "Edit Candidates", "Delete Candidates", "View Jobs", "Create Jobs", "Edit Jobs", "Delete Jobs", "Schedule Interviews", "View Reports", "Export Reports", "Manage Users", "View Employees"], color: "bg-pink-100 text-pink-700", description: "Manage hiring processes, candidates, and reporting" },
+  { id: 4, role: "HR_Manager", permissions: ["View", "Edit", "Delete", "Manage"], grantedPermissions: ["View Candidates", "Edit Candidates", "Delete Candidates", "View Jobs", "Create Jobs", "Edit Jobs", "Delete Jobs", "Schedule Interviews", "View Reports", "Export Reports", "Manage Users", "Manage Roles", "View Employees", "Edit Employees"], color: "bg-pink-600 text-white", description: "Full HR management with role administration" },
+  { id: 5, role: "Senior_Frontend", permissions: ["View", "Update Tasks"], grantedPermissions: ["View Projects", "View Tasks", "Update Task", "View Teams"], color: "bg-blue-600 text-white", description: "Senior frontend developer with task management" },
+  { id: 6, role: "Senior_Backend", permissions: ["View", "Update Tasks"], grantedPermissions: ["View Projects", "View Tasks", "Update Task", "View Teams"], color: "bg-indigo-600 text-white", description: "Senior backend developer with task management" },
+  { id: 7, role: "Junior_Frontend", permissions: ["View", "Update Tasks"], grantedPermissions: ["View Projects", "View Tasks", "Update Task"], color: "bg-sky-100 text-sky-700", description: "Junior frontend developer" },
+  { id: 8, role: "Junior_Backend", permissions: ["View", "Update Tasks"], grantedPermissions: ["View Projects", "View Tasks", "Update Task"], color: "bg-violet-100 text-violet-700", description: "Junior backend developer" },
+  { id: 9, role: "DBA", permissions: ["View", "Update Tasks", "System"], grantedPermissions: ["View Projects", "View Tasks", "Update Task", "System Settings"], color: "bg-teal-600 text-white", description: "Database administrator with system access" },
+  { id: 10, role: "DBA_Intern", permissions: ["View"], grantedPermissions: ["View Projects", "View Tasks"], color: "bg-cyan-100 text-cyan-700", description: "Database administrator intern" },
+  { id: 11, role: "Frontend_Intern", permissions: ["View"], grantedPermissions: ["View Projects", "View Tasks"], color: "bg-blue-100 text-blue-700", description: "Frontend developer intern" },
+  { id: 12, role: "Backend_Intern", permissions: ["View"], grantedPermissions: ["View Projects", "View Tasks"], color: "bg-indigo-100 text-indigo-700", description: "Backend developer intern" },
+  { id: 13, role: "Intern", permissions: ["View"], grantedPermissions: ["View Projects", "View Tasks"], color: "bg-amber-100 text-amber-700", description: "General intern with basic access" },
+  { id: 14, role: "Candidate", permissions: ["View Jobs"], grantedPermissions: ["View Jobs"], color: "bg-green-100 text-green-700", description: "External candidate viewing job listings" },
 ];
 
 export function Employees() {
   const { user } = useAuth();
-  const isAdmin = user?.role === "admin";
+  const isAdmin = ["CTO", "HR", "HR_Manager"].includes(user?.role || "");
   const { employees, addEmployee, updateEmployeeRole } = useSharedContext();
   const [searchTerm, setSearchTerm] = useState("");
   const [selectedRole, setSelectedRole] = useState("All");
@@ -49,7 +57,7 @@ export function Employees() {
   const [formName, setFormName] = useState("");
   const [formEmail, setFormEmail] = useState("");
   const [formJobTitle, setFormJobTitle] = useState("");
-  const [formRole, setFormRole] = useState("Employee");
+  const [formRole, setFormRole] = useState("Intern");
   const [formDepartment, setFormDepartment] = useState("");
 
   const handleAddUser = async () => {
@@ -81,7 +89,7 @@ export function Employees() {
       setFormEmail("");
       setFormJobTitle("");
       setFormDepartment("");
-      setFormRole("Employee");
+      setFormRole("Intern");
     } catch (err: unknown) {
       toast.error(err instanceof Error ? err.message : "Failed to add user.");
     }

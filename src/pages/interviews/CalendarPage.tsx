@@ -17,7 +17,7 @@ const TODAY_STR = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2,
 export function CalendarPage() {
   const { interviews, addInterview, removeInterview, candidates } = useSharedContext();
   const { user } = useAuth();
-  const isHR = user?.role === "hr";
+  const isHR = ["CTO", "HR", "HR_Manager", "Head_of_Operations"].includes(user?.role || "");
   const [currentDate, setCurrentDate] = useState(new Date());
   const [showScheduleModal, setShowScheduleModal] = useState(false);
   const [selectedDate, setSelectedDate] = useState<string | null>(null);

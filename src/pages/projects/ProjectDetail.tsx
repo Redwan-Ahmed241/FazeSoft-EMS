@@ -47,12 +47,10 @@ export function ProjectDetail() {
   const currentUser = user as (typeof user & { permissions?: string[] });
   const canAssignTask =
     currentUser?.permissions?.includes("assign_task") ||
-    currentUser?.role === "admin" ||
-    currentUser?.role === "hr";
+    ["CTO", "HR", "HR_Manager", "Head_of_Operations", "Senior_Frontend", "Senior_Backend"].includes(currentUser?.role || "");
   const canUpdateTask =
     currentUser?.permissions?.includes("update_task") ||
-    currentUser?.role === "admin" ||
-    currentUser?.role === "hr";
+    ["CTO", "HR", "HR_Manager", "Head_of_Operations", "Senior_Frontend", "Senior_Backend"].includes(currentUser?.role || "");
 
   const [loading, setLoading] = useState(true);
   const [project, setProject] = useState<ProjectOut | null>(null);

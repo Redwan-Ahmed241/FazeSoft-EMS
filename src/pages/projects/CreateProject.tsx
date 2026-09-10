@@ -283,7 +283,7 @@ export function CreateProject() {
                 {user?.name || user?.email || "Current User"}
               </span>
               <span className="text-xs text-muted-foreground bg-background px-2 py-0.5 rounded border border-border">
-                {user?.role?.toUpperCase() || "ADMIN"}
+                {user?.role?.replace(/_/g, " ").toUpperCase() || "CTO"}
               </span>
             </div>
             <p className="text-xs text-muted-foreground">
