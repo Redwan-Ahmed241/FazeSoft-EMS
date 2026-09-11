@@ -1,9 +1,10 @@
 import { useState } from "react";
-import { Search, Mail, MessageSquare, Phone, Download, Eye, Star, Filter, Sparkles, TrendingUp, Award, Target, X, MapPin, Calendar, Briefcase, Clock, ChevronRight, FileText, User, Send, Wand2, Copy, Check, CheckCircle2, XCircle, Trash2 } from "lucide-react";
+import { Search, Mail, MessageSquare, Phone, Download, Eye, Star, Filter, Sparkles, TrendingUp, Award, Target, X, MapPin, Calendar, Briefcase, Clock, ChevronRight, FileText, User, Send, Wand2, Copy, Check, CheckCircle2, XCircle, Trash2, ExternalLink, AlertCircle } from "lucide-react";
 import { RadialBarChart, RadialBar, PolarAngleAxis } from "recharts";
 import { useSharedContext, type CandidateData } from "../../context/SharedContext";
 import { toast } from "sonner@2.0.3";
 import InitialsAvatar from "../../components/common/ui/InitialsAvatar";
+import { emailApi, createGmailComposeUrl, createOutlookComposeUrl, createMailtoUrl } from "../../api/emails";
 
 const kanbanColumns = [
   { id: "Applied",  title: "Applied",   color: "bg-gray-50",   borderColor: "border-gray-300" },
@@ -118,6 +119,11 @@ export function Candidate() {
   const [interviewDate, setInterviewDate] = useState("");
   const [interviewTime, setInterviewTime] = useState("");
   const [meetingLink, setMeetingLink] = useState("https://meet.google.com/xyz-abcd-xyz");
+  const [emailDeliveryFallback, setEmailDeliveryFallback] = useState<{
+    reason: string;
+    isOpen: boolean;
+  } | null>(null);
+  const [copiedEmail, setCopiedEmail] = useState(false);
   const { addInterview } = useSharedContext();
 
   const filteredCandidates = candidates.filter(
@@ -181,6 +187,7 @@ export function Candidate() {
     setEmailBody("");
     setShowAITemplates(false);
     setEmailSending(false);
+    setEmailDeliveryFallback(null);
   };
 
   // AI generate email
@@ -191,6 +198,14 @@ export function Candidate() {
     
     if (templateType === "interview_invite") {
       setIsInterviewInvite(true);
+      if (!interviewDate) {
+        const tomorrow = new Date();
+        tomorrow.setDate(tomorrow.getDate() + 1);
+        setInterviewDate(tomorrow.toISOString().split("T")[0]);
+      }
+      if (!interviewTime) {
+        setInterviewTime("11:00");
+      }
     } else {
       setIsInterviewInvite(false);
     }
@@ -201,10 +216,10 @@ export function Candidate() {
       setEmailBody(body);
       setIsGeneratingEmail(false);
       toast.success("AI email generated successfully!");
-    }, 1500);
+    }, 1200);
   };
 
-  // Send email
+  // Send email via automated server
   const handleSendEmail = async () => {
     if (!emailCandidate || !emailSubject.trim() || !emailBody.trim()) {
       toast.error("Please fill in subject and body");
@@ -218,12 +233,88 @@ export function Candidate() {
     
     setEmailSending(true);
     
-    // Simulate API email call delay
-    await new Promise(r => setTimeout(r, 1200));
-    
-    if (isInterviewInvite) {
+    try {
+      const response = await emailApi.send({
+        to_email: emailCandidate.email,
+        to_name: emailCandidate.name,
+        subject: emailSubject,
+        body: emailBody,
+        is_interview: isInterviewInvite,
+        interview_date: interviewDate,
+        interview_time: interviewTime,
+        meeting_link: meetingLink,
+        candidate_id: emailCandidate.id,
+      });
+
+      if (response && response.success) {
+        if (isInterviewInvite) {
+          await addInterview({
+            id: Date.now(),
+            candidate: emailCandidate.name,
+            candidateEmail: emailCandidate.email,
+            position: emailCandidate.position,
+            date: interviewDate,
+            time: interviewTime,
+            duration: "45m",
+            type: "Video",
+            interviewer: "HR Team",
+            meetingLink: meetingLink,
+            avatar: emailCandidate.avatar,
+          });
+          toast.success(`Interview scheduled and email delivered to ${emailCandidate.name}!`);
+        } else {
+          toast.success(`Email successfully delivered to ${emailCandidate.name} (${emailCandidate.email})`);
+        }
+
+        setEmailCandidate(null);
+        setIsInterviewInvite(false);
+        setInterviewDate("");
+        setInterviewTime("");
+        setEmailDeliveryFallback(null);
+      } else {
+        // Backend provider (e.g. Resend in test mode) cannot deliver to external domain:
+        // Automatically open Gmail Web with pre-filled content so user never gets redirected to Outlook!
+        handleSendViaClient("gmail");
+        toast.info("Resend test mode: Opened in Gmail Web ready to send!");
+      }
+    } catch (err: any) {
+      console.warn("Backend email dispatch error:", err);
+      handleSendViaClient("gmail");
+      toast.info("Opened in Gmail Web ready to send!");
+    } finally {
+      setEmailSending(false);
+    }
+  };
+
+  // Direct client send handler (Gmail, Outlook, Mailto)
+  const handleSendViaClient = async (clientType: "gmail" | "outlook" | "mailto") => {
+    if (!emailCandidate || !emailSubject.trim() || !emailBody.trim()) {
+      toast.error("Please fill in subject and body");
+      return;
+    }
+
+    let fullBody = emailBody;
+    if (isInterviewInvite && (interviewDate || meetingLink)) {
+      fullBody += `\n\n--- Scheduled Interview Details ---\nDate: ${interviewDate || "TBD"}\nTime: ${interviewTime || "TBD"}\nMeeting Link: ${meetingLink || "TBD"}`;
+    }
+
+    let url = "";
+    let clientName = "Default Mail";
+
+    if (clientType === "gmail") {
+      url = createGmailComposeUrl(emailCandidate.email, emailSubject, fullBody);
+      clientName = "Gmail";
+    } else if (clientType === "outlook") {
+      url = createOutlookComposeUrl(emailCandidate.email, emailSubject, fullBody);
+      clientName = "Outlook";
+    } else {
+      url = createMailtoUrl(emailCandidate.email, emailSubject, fullBody);
+    }
+
+    // Schedule interview if invite
+    if (isInterviewInvite && interviewDate && interviewTime) {
       await addInterview({
-        id: Date.now(), // SharedContext re-assigns DB ID if using Supabase
+        id: Date.now(),
         candidate: emailCandidate.name,
         candidateEmail: emailCandidate.email,
         position: emailCandidate.position,
@@ -233,18 +324,33 @@ export function Candidate() {
         type: "Video",
         interviewer: "HR Team",
         meetingLink: meetingLink,
-        avatar: emailCandidate.avatar
+        avatar: emailCandidate.avatar,
       });
-      toast.success(`Interview scheduled and email sent to ${emailCandidate.name}!`);
-    } else {
-      toast.success(`Email sent to ${emailCandidate.name} at ${emailCandidate.email}`);
     }
-    
+
+    if (clientType === "mailto") {
+      window.location.href = url;
+    } else {
+      window.open(url, "_blank", "noopener,noreferrer");
+    }
+
+    toast.success(`Opening ${clientName} to send email to ${emailCandidate.name}!`);
     setEmailCandidate(null);
-    setEmailSending(false);
     setIsInterviewInvite(false);
     setInterviewDate("");
     setInterviewTime("");
+    setEmailDeliveryFallback(null);
+  };
+
+  const handleCopyEmail = () => {
+    let fullText = `Subject: ${emailSubject}\n\nTo: ${emailCandidate?.name} <${emailCandidate?.email}>\n\n${emailBody}`;
+    if (isInterviewInvite && (interviewDate || meetingLink)) {
+      fullText += `\n\n--- Scheduled Interview Details ---\nDate: ${interviewDate}\nTime: ${interviewTime}\nMeeting Link: ${meetingLink}`;
+    }
+    navigator.clipboard.writeText(fullText);
+    setCopiedEmail(true);
+    toast.success("Email content copied to clipboard!");
+    setTimeout(() => setCopiedEmail(false), 2000);
   };
 
   // Download resume
@@ -1221,18 +1327,93 @@ export function Candidate() {
                 />
               </div>
 
+              {/* Fallback Notice if Automated SMTP is Unconfigured */}
+              {emailDeliveryFallback?.isOpen && (
+                <div className="rounded-xl border border-amber-500/30 bg-amber-500/10 p-4 space-y-3">
+                  <div className="flex items-start gap-3">
+                    <AlertCircle className="h-5 w-5 text-amber-500 shrink-0 mt-0.5" />
+                    <div className="space-y-1">
+                      <p className="text-sm font-semibold text-foreground">
+                        Email Service Notice
+                      </p>
+                      <p className="text-xs text-muted-foreground">
+                        {emailDeliveryFallback.reason} You can instantly send this email directly from your email client below:
+                      </p>
+                    </div>
+                  </div>
+                  <div className="flex flex-wrap gap-2 pt-1">
+                    <button
+                      type="button"
+                      onClick={() => handleSendViaClient("gmail")}
+                      className="flex items-center gap-1.5 rounded-lg bg-red-600 hover:bg-red-700 text-white px-3.5 py-1.5 text-xs font-semibold shadow-sm transition-all"
+                    >
+                      <Mail className="h-3.5 w-3.5" /> Send via Gmail
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => handleSendViaClient("outlook")}
+                      className="flex items-center gap-1.5 rounded-lg bg-blue-600 hover:bg-blue-700 text-white px-3.5 py-1.5 text-xs font-semibold shadow-sm transition-all"
+                    >
+                      <Mail className="h-3.5 w-3.5" /> Send via Outlook
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => handleSendViaClient("mailto")}
+                      className="flex items-center gap-1.5 rounded-lg border border-input bg-card hover:bg-accent text-foreground px-3.5 py-1.5 text-xs font-semibold transition-all"
+                    >
+                      <ExternalLink className="h-3.5 w-3.5" /> Default Mail App
+                    </button>
+                    <button
+                      type="button"
+                      onClick={handleCopyEmail}
+                      className="flex items-center gap-1.5 rounded-lg border border-input bg-card hover:bg-accent text-foreground px-3 py-1.5 text-xs font-medium transition-all"
+                    >
+                      {copiedEmail ? <Check className="h-3.5 w-3.5 text-green-500" /> : <Copy className="h-3.5 w-3.5" />}
+                      {copiedEmail ? "Copied!" : "Copy"}
+                    </button>
+                  </div>
+                </div>
+              )}
+
               {/* Actions */}
-              <div className="flex items-center justify-between pt-2">
-                <p className="text-xs text-muted-foreground">
-                  {emailBody.length > 0 ? `${emailBody.split(/\s+/).filter(Boolean).length} words` : "No content yet"}
-                </p>
-                <div className="flex gap-3">
+              <div className="flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-4 pt-2">
+                <div className="flex flex-wrap items-center gap-2">
+                  <span className="text-xs text-muted-foreground">Quick send:</span>
+                  <button
+                    type="button"
+                    onClick={() => handleSendViaClient("gmail")}
+                    title="Open in Gmail Web"
+                    className="flex items-center gap-1 rounded-lg border border-input bg-card px-2.5 py-1.5 text-xs font-medium text-foreground hover:bg-accent hover:border-red-400/50 transition-all"
+                  >
+                    <span className="h-2 w-2 rounded-full bg-red-500" /> Gmail
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => handleSendViaClient("outlook")}
+                    title="Open in Outlook Web"
+                    className="flex items-center gap-1 rounded-lg border border-input bg-card px-2.5 py-1.5 text-xs font-medium text-foreground hover:bg-accent hover:border-blue-400/50 transition-all"
+                  >
+                    <span className="h-2 w-2 rounded-full bg-blue-500" /> Outlook
+                  </button>
+                  <button
+                    type="button"
+                    onClick={handleCopyEmail}
+                    title="Copy message to clipboard"
+                    className="flex items-center gap-1 rounded-lg border border-input bg-card px-2.5 py-1.5 text-xs font-medium text-foreground hover:bg-accent transition-all"
+                  >
+                    {copiedEmail ? <Check className="h-3.5 w-3.5 text-green-500" /> : <Copy className="h-3.5 w-3.5" />}
+                    {copiedEmail ? "Copied" : "Copy"}
+                  </button>
+                </div>
+
+                <div className="flex gap-3 justify-end">
                   <button
                     onClick={() => {
                       setEmailCandidate(null);
                       setIsInterviewInvite(false);
                       setInterviewDate("");
                       setInterviewTime("");
+                      setEmailDeliveryFallback(null);
                     }}
                     className="rounded-xl border-2 border-input px-5 py-2.5 text-sm font-semibold text-foreground hover:bg-accent transition-all"
                   >
