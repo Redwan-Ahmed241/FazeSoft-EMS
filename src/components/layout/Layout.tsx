@@ -134,23 +134,35 @@ export function Layout() {
               </div>
               <div className="text-[11px] text-muted-foreground truncate">{user?.email}</div>
               <div className="flex items-center gap-1.5 mt-0.5">
-                {user?.role === "admin" ? (
-                  <span className="inline-flex items-center gap-1 rounded-full bg-red-100 px-2 py-0.5 text-[10px] font-semibold text-red-700">
-                    <Shield className="h-2.5 w-2.5" /> Admin User
-                  </span>
-                ) : user?.role === "hr" ? (
-                  <span className="inline-flex items-center gap-1 rounded-full bg-primary/10 px-2 py-0.5 text-[10px] font-semibold text-primary">
-                    <Shield className="h-2.5 w-2.5" /> HR Manager
-                  </span>
-                ) : user?.role === "employee" ? (
-                  <span className="inline-flex items-center gap-1 rounded-full bg-green-100 px-2 py-0.5 text-[10px] font-semibold text-green-700">
-                    <Users className="h-2.5 w-2.5" /> Employee
-                  </span>
-                ) : (
-                  <span className="inline-flex items-center gap-1 rounded-full bg-blue-100 px-2 py-0.5 text-[10px] font-semibold text-blue-700">
-                    <ClipboardList className="h-2.5 w-2.5" /> Candidate
-                  </span>
-                )}
+                {(() => {
+                  const displayRole = user?.role_name || (user?.role === "admin" ? "Admin" : user?.role === "hr" ? "HR" : user?.role === "employee" ? "Employee" : "Candidate");
+                  if (user?.role === "admin") {
+                    return (
+                      <span className="inline-flex items-center gap-1 rounded-full bg-red-100 px-2 py-0.5 text-[10px] font-semibold text-red-700">
+                        <Shield className="h-2.5 w-2.5" /> {displayRole}
+                      </span>
+                    );
+                  }
+                  if (user?.role === "hr") {
+                    return (
+                      <span className="inline-flex items-center gap-1 rounded-full bg-primary/10 px-2 py-0.5 text-[10px] font-semibold text-primary">
+                        <Shield className="h-2.5 w-2.5" /> {displayRole}
+                      </span>
+                    );
+                  }
+                  if (user?.role === "employee") {
+                    return (
+                      <span className="inline-flex items-center gap-1 rounded-full bg-green-100 px-2 py-0.5 text-[10px] font-semibold text-green-700">
+                        <Users className="h-2.5 w-2.5" /> {displayRole}
+                      </span>
+                    );
+                  }
+                  return (
+                    <span className="inline-flex items-center gap-1 rounded-full bg-blue-100 px-2 py-0.5 text-[10px] font-semibold text-blue-700">
+                      <ClipboardList className="h-2.5 w-2.5" /> {displayRole}
+                    </span>
+                  );
+                })()}
               </div>
             </div>
           </div>

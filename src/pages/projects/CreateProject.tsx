@@ -13,9 +13,11 @@ import {
 } from "lucide-react";
 import { toast } from "sonner@2.0.3";
 import { clientsApi } from "../../api/clients";
+import { projectApi } from "../../api/projects";
 import { useAuth } from "../../context/AuthContext";
 import type { ClientOut } from "../../types/client";
 import type { ProjectFormData } from "../../types/project";
+import type { UserOut } from "../../types/auth";
 
 export function CreateProject() {
   const navigate = useNavigate();
@@ -27,6 +29,10 @@ export function CreateProject() {
   const [fetchingClients, setFetchingClients] = useState(true);
   const [clients, setClients] = useState<ClientOut[]>([]);
 
+  const [fetchingManagers, setFetchingManagers] = useState(true);
+  const [managers, setManagers] = useState<UserOut[]>([]);
+  const [managerId, setManagerId] = useState(draft.managerId ?? "");
+
   // Form fields — prefilled from draft state when returning from a later step
   const [projectName, setProjectName] = useState(draft.projectName ?? "");
   const [projectCode, setProjectCode] = useState(draft.projectCode ?? "");
@@ -35,9 +41,9 @@ export function CreateProject() {
   const [endDate, setEndDate] = useState(draft.endDate ?? "");
   const [clientId, setClientId] = useState(draft.clientId ?? "");
 
-  // Load clients list on mount
+  // Load clients and eligible managers list on mount
   useEffect(() => {
-    async function loadClients() {
+    async function loadData() {
       try {
         setFetchingClients(true);
         const data = await clientsApi.list();
@@ -51,9 +57,24 @@ export function CreateProject() {
       } finally {
         setFetchingClients(false);
       }
+
+      try {
+        setFetchingManagers(true);
+        const mgrs = await projectApi.listManagers();
+        setManagers(mgrs || []);
+        if (mgrs && mgrs.length > 0 && !managerId) {
+          // Default to current user if in list, otherwise first manager
+          const curInList = mgrs.find(m => m.id === user?.id);
+          setManagerId(curInList ? curInList.id : mgrs[0].id);
+        }
+      } catch (err: unknown) {
+        console.error("Failed to load managers:", err);
+      } finally {
+        setFetchingManagers(false);
+      }
     }
-    loadClients();
-  }, []);
+    loadData();
+  }, [user?.id]);
 
   // Auto-generate a starter project code if empty
   const handleNameChange = (val: string) => {
@@ -104,6 +125,7 @@ export function CreateProject() {
       projectCode: projectCode.trim().toUpperCase(),
       description: description.trim(),
       clientId,
+      managerId: managerId || user?.id,
       startDate,
       endDate,
     };
@@ -278,16 +300,40 @@ export function CreateProject() {
             <label className="block text-sm font-medium text-foreground flex items-center gap-1.5">
               <UserIcon className="w-4 h-4 text-primary" /> Project Manager
             </label>
-            <div className="px-4 py-2.5 rounded-xl border border-input bg-muted/40 text-foreground flex items-center justify-between text-sm">
-              <span className="font-medium text-foreground">
-                {user?.name || user?.email || "Current User"}
-              </span>
-              <span className="text-xs text-muted-foreground bg-background px-2 py-0.5 rounded border border-border">
-                {user?.role?.toUpperCase() || "ADMIN"}
-              </span>
-            </div>
+            {fetchingManagers ? (
+              <div className="flex items-center gap-2 text-sm text-muted-foreground py-2">
+                <Loader2 className="w-4 h-4 animate-spin text-primary" /> Loading eligible managers...
+              </div>
+            ) : managers.length === 0 ? (
+              <div className="px-4 py-2.5 rounded-xl border border-input bg-muted/40 text-foreground flex items-center justify-between text-sm">
+                <span className="font-medium text-foreground">
+                  {user?.name || user?.email || "Current User"}
+                </span>
+                <span className="text-xs text-muted-foreground bg-background px-2 py-0.5 rounded border border-border">
+                  {user?.role_name || user?.role?.toUpperCase()}
+                </span>
+              </div>
+            ) : (
+              <select
+                value={managerId}
+                onChange={(e) => setManagerId(e.target.value)}
+                required
+                className="w-full px-4 py-2.5 rounded-xl border border-input bg-background text-foreground focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary transition"
+              >
+                {managers.map((m) => {
+                  const roleLabel = m.role_desc || m.role_name || m.role;
+                  const nameLabel = m.full_name || (m as any).name || (m.email === user?.email && user?.name ? user.name : null);
+                  const display = nameLabel ? `${nameLabel} (${m.email})` : m.email;
+                  return (
+                    <option key={m.id} value={m.id}>
+                      {display} — [{roleLabel}]
+                    </option>
+                  );
+                })}
+              </select>
+            )}
             <p className="text-xs text-muted-foreground">
-              Manager is automatically assigned to the authenticated user creating this project.
+              Select an executive project manager (Chief Technology Officer or Head of Operations).
             </p>
           </div>
         </div>

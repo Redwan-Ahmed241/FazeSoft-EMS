@@ -25,6 +25,8 @@ export interface UserOut {
   email: string;
   full_name: string | null;
   role: string;
+  role_name?: string | null;
+  role_desc?: string | null;
   phone: string | null;
   location: string | null;
   job_title: string | null;

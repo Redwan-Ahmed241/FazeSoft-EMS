@@ -12,6 +12,7 @@ import {
   Loader2,
   Sparkles,
   AlertCircle,
+  ShieldCheck,
 } from "lucide-react";
 import { toast } from "sonner@2.0.3";
 import { projectApi } from "../../api/projects";
@@ -55,8 +56,9 @@ export function ProjectReview() {
   const hasTeam = !!teamData;
 
   const [clientLabel, setClientLabel] = useState<string | null>(null);
+  const [managerLabel, setManagerLabel] = useState<string | null>(null);
 
-  // Resolve client label for display
+  // Resolve client and manager label for display
   React.useEffect(() => {
     if (!projectData?.clientId) return;
     let cancelled = false;
@@ -70,10 +72,29 @@ export function ProjectReview() {
       .catch(() => {
         if (!cancelled) setClientLabel(projectData.clientId);
       });
+
+    if (projectData?.managerId) {
+      projectApi
+        .listManagers()
+        .then((managers) => {
+          if (cancelled) return;
+          const m = managers.find((x) => x.id === projectData.managerId || (x as any).user_id === projectData.managerId);
+          if (m) {
+            const roleName = m.role_desc || m.role_name || m.role || "Manager";
+            setManagerLabel(`${m.full_name || m.email} (${roleName})`);
+          } else {
+            setManagerLabel(projectData.managerId!);
+          }
+        })
+        .catch(() => {
+          if (!cancelled) setManagerLabel(projectData.managerId || null);
+        });
+    }
+
     return () => {
       cancelled = true;
     };
-  }, [projectData?.clientId]);
+  }, [projectData?.clientId, projectData?.managerId]);
 
   const handleBack = () => {
     if (isExistingProjectMode) {
@@ -121,6 +142,7 @@ export function ProjectReview() {
           project_code: projectData.projectCode.toUpperCase(),
           description: projectData.description,
           client_id: projectData.clientId,
+          manager_id: projectData.managerId,
           start_date: projectData.startDate,
           end_date: projectData.endDate,
         });
@@ -284,7 +306,13 @@ export function ProjectReview() {
             </p>
             <p className="text-sm font-semibold text-foreground mt-0.5">{clientLabel || "Loading..."}</p>
           </div>
-          <div className="grid grid-cols-2 gap-4">
+          <div>
+            <p className="text-xs font-medium text-muted-foreground uppercase tracking-wide flex items-center gap-1">
+              <ShieldCheck className="w-3 h-3 text-primary" /> Project Manager
+            </p>
+            <p className="text-sm font-semibold text-foreground mt-0.5">{managerLabel || "Assigning current user..."}</p>
+          </div>
+          <div className="grid grid-cols-2 gap-4 sm:col-span-2">
             <div>
               <p className="text-xs font-medium text-muted-foreground uppercase tracking-wide flex items-center gap-1">
                 <Calendar className="w-3 h-3" /> Start Date
