@@ -616,6 +616,18 @@
     z-index: 60;
   }
 
+  .z-\[9999\] {
+    z-index: 9999;
+  }
+
+  .z-\[99999\] {
+    z-index: 99999;
+  }
+
+  [data-radix-popper-content-wrapper] {
+    z-index: 99999 !important;
+  }
+
   .m-auto {
     margin: auto;
   }
@@ -1426,6 +1438,10 @@
 
   .bg-card {
     background-color: var(--card);
+  }
+
+  .bg-popover {
+    background-color: var(--popover, #ffffff);
   }
 
   .bg-destructive {

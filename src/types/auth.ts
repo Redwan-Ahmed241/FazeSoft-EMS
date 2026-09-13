@@ -34,10 +34,15 @@ export interface UserOut {
   avatar: string | null;
   is_active: boolean;
   created_at: string;
+  permissions?: string[];
 }
 
 export interface Token {
   access_token: string;
   token_type: string;
   user: UserOut;
+}
+
+export interface RoleChangeRequest {
+  role_name: string;
 }

@@ -16,6 +16,7 @@ import {
   FileText,
   LogOut,
   History as HistoryIcon,
+  ShieldCheck,
 } from "lucide-react";
 import Frame35 from "../common/Frame35";
 import InitialsAvatar from "../common/ui/InitialsAvatar";
@@ -74,6 +75,7 @@ export function Sidebar({ sidebarOpen, setSidebarOpen }: SidebarProps) {
 
   const currentUser = user as (typeof user & { permissions?: string[] });
   const canAssignTask = currentUser?.permissions?.includes("assign_task");
+  const canChangeRole = currentUser?.permissions?.includes("change_role");
 
   const isTier1 = user?.role === "admin" || user?.role === "hr";
   const isTier2 = user?.role === "employee" && Boolean(canAssignTask);
@@ -94,9 +96,21 @@ export function Sidebar({ sidebarOpen, setSidebarOpen }: SidebarProps) {
       })
       .map((item) => ({ label: item.label, path: item.path, icon: item.icon }));
   } else if (isTier2) {
-    menuItems = tier2MenuItems;
+    menuItems = [...tier2MenuItems];
   } else if (isTier3) {
-    menuItems = tier3MenuItems;
+    menuItems = [...tier3MenuItems];
+  }
+
+  // Only show if user has change_role permission
+  if (canChangeRole) {
+    // Insert before Profile/Settings if present, or at the end
+    const profileIdx = menuItems.findIndex((item) => item.path === "/dashboard/profile");
+    const roleItem = { label: "Role Management", path: "/dashboard/roles", icon: ShieldCheck };
+    if (profileIdx !== -1) {
+      menuItems.splice(profileIdx, 0, roleItem);
+    } else {
+      menuItems.push(roleItem);
+    }
   }
 
   const isActive = (path: string) => {

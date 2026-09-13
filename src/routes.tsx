@@ -27,6 +27,19 @@ import { ProjectReview } from "./pages/projects/ProjectReview";
 import { ProjectDetail } from "./pages/projects/ProjectDetail";
 import { ProjectList } from "./pages/projects/ProjectList";
 import { EditProject } from "./pages/projects/EditProject";
+import { RoleManagement } from "./pages/roles/RoleManagement";
+import { useAuth } from "./context/AuthContext";
+
+const RoleManagementRoute = () => {
+  const { user } = useAuth();
+  const currentUser = user as (typeof user & { permissions?: string[] });
+  const canChangeRole = currentUser?.permissions?.includes("change_role");
+
+  if (!canChangeRole) {
+    return <Navigate to="/dashboard" replace />;
+  }
+  return <RoleManagement />;
+};
 
 const getBasename = (): string => {
   if (typeof window !== "undefined") {
@@ -101,6 +114,7 @@ export const router = createBrowserRouter([
       { path: "tasks", Component: () => <ProtectedRoute allowedRoles={["employee"]}><MyTasks /></ProtectedRoute> },
       { path: "team", Component: () => <ProtectedRoute allowedRoles={["employee"]}><TeamProgress /></ProtectedRoute> },
       { path: "history", Component: () => <ProtectedRoute allowedRoles={["employee"]}><History /></ProtectedRoute> },
+      { path: "roles", Component: RoleManagementRoute },
       { path: "profile", Component: Profile },
       { path: "settings", Component: Settings },
     ],

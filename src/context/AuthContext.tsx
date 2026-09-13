@@ -31,6 +31,7 @@ export interface User {
   emergency_contact?: string;
   date_of_exit?: string;
   last_salary?: string;
+  permissions?: string[];
 }
 
 interface AuthContextType {
@@ -78,6 +79,7 @@ function toUser(u: {
   job_title?: string | null;
   bio?: string | null;
   avatar?: string | null;
+  permissions?: string[];
 }): User {
   return {
     id: u.id,
@@ -95,6 +97,7 @@ function toUser(u: {
     employee_id: '',
     joining_date: '',
     employment_status: 'Active',
+    permissions: u.permissions || [],
   };
 }
 
