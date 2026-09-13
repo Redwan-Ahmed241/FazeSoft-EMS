@@ -9,12 +9,22 @@ import {
   RotateCcw,
   AlertTriangle,
   Loader2,
+  Send,
 } from "lucide-react";
 import { useAuth } from "../../context/AuthContext";
 import { projectApi } from "../../api/projects";
 import { taskApi } from "../../api/tasks";
+import { submissionApi } from "../../api/submissions";
 import type { TaskOut, TaskStatus } from "../../types/task";
 import { toast } from "sonner@2.0.3";
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+} from "../../components/common/ui/dialog";
 
 const COLUMNS: Array<{
   status: TaskStatus;
@@ -70,6 +80,45 @@ export function MyTasks() {
   const { user } = useAuth();
   const [myTasks, setMyTasks] = useState<TaskOut[]>([]);
   const [loading, setLoading] = useState(true);
+
+  // Submit work modal state
+  const [submitModalOpen, setSubmitModalOpen] = useState(false);
+  const [submittingTask, setSubmittingTask] = useState<TaskOut | null>(null);
+  const [commitLink, setCommitLink] = useState("");
+  const [notes, setNotes] = useState("");
+  const [isSubmitting, setIsSubmitting] = useState(false);
+
+  const openSubmitModal = (task: TaskOut) => {
+    setSubmittingTask(task);
+    setCommitLink("");
+    setNotes("");
+    setSubmitModalOpen(true);
+  };
+
+  const handleSubmitWork = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!submittingTask) return;
+
+    try {
+      setIsSubmitting(true);
+      await submissionApi.create(submittingTask.task_id, {
+        commit_link: commitLink.trim() || undefined,
+        notes: notes.trim() || undefined,
+      });
+      toast.success("Work submitted successfully");
+      setSubmitModalOpen(false);
+      setCommitLink("");
+      setNotes("");
+      setSubmittingTask(null);
+    } catch (err: unknown) {
+      console.error("Failed to submit work:", err);
+      const message =
+        err instanceof Error ? err.message : "Failed to submit work";
+      toast.error(message);
+    } finally {
+      setIsSubmitting(false);
+    }
+  };
 
   useEffect(() => {
     async function fetchUserTasks() {
@@ -305,6 +354,17 @@ export function MyTasks() {
                           </button>
                         )}
                       </div>
+
+                      {/* Submit Work button */}
+                      <div className="mt-2.5 pt-2 border-t border-border/60 flex justify-end">
+                        <button
+                          type="button"
+                          onClick={() => openSubmitModal(t)}
+                          className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-muted/60 text-foreground border border-border font-medium text-xs hover:bg-muted transition cursor-pointer"
+                        >
+                          <Send className="w-3 h-3 text-primary" /> Submit Work
+                        </button>
+                      </div>
                     </div>
                   ))
                 )}
@@ -326,6 +386,75 @@ export function MyTasks() {
         </span>
         <span className="ml-auto">Only tasks assigned to you are shown here.</span>
       </div>
+
+      {/* Submit Work Dialog */}
+      <Dialog open={submitModalOpen} onOpenChange={setSubmitModalOpen}>
+        <DialogContent className="sm:max-w-lg bg-card border border-border">
+          <DialogHeader>
+            <DialogTitle className="flex items-center gap-2 text-lg font-bold text-foreground">
+              <Send className="w-5 h-5 text-primary" /> Submit Work
+            </DialogTitle>
+            <DialogDescription className="text-xs text-muted-foreground">
+              {submittingTask?.title
+                ? `Submit completed work or progress for "${submittingTask.title}".`
+                : "Submit completed work or progress for this task."}
+            </DialogDescription>
+          </DialogHeader>
+
+          <form onSubmit={handleSubmitWork} className="space-y-4 py-2">
+            <div className="space-y-1">
+              <label className="text-xs font-semibold text-foreground">
+                Commit / PR Link <span className="text-muted-foreground font-normal">(optional)</span>
+              </label>
+              <input
+                type="text"
+                placeholder="https://github.com/..."
+                value={commitLink}
+                onChange={(e) => setCommitLink(e.target.value)}
+                className="w-full rounded-xl border border-border bg-background px-3 py-2 text-sm text-foreground focus:outline-hidden focus:ring-2 focus:ring-primary"
+              />
+            </div>
+
+            <div className="space-y-1">
+              <label className="text-xs font-semibold text-foreground">
+                Notes / Deliverables <span className="text-muted-foreground font-normal">(optional)</span>
+              </label>
+              <textarea
+                rows={4}
+                placeholder="Add any notes, description of work completed, or instructions for review..."
+                value={notes}
+                onChange={(e) => setNotes(e.target.value)}
+                className="w-full rounded-xl border border-border bg-background px-3 py-2 text-sm text-foreground focus:outline-hidden focus:ring-2 focus:ring-primary resize-none"
+              />
+            </div>
+
+            <DialogFooter className="pt-2 gap-2">
+              <button
+                type="button"
+                onClick={() => setSubmitModalOpen(false)}
+                className="px-4 py-2 rounded-xl bg-muted/60 text-foreground border border-border font-medium text-sm hover:bg-muted transition cursor-pointer"
+              >
+                Cancel
+              </button>
+              <button
+                type="submit"
+                disabled={isSubmitting}
+                className="flex items-center gap-2 px-4 py-2 rounded-xl bg-primary text-primary-foreground font-medium text-sm hover:bg-primary/90 transition shadow-xs cursor-pointer disabled:opacity-50"
+              >
+                {isSubmitting ? (
+                  <>
+                    <Loader2 className="w-4 h-4 animate-spin" /> Submitting...
+                  </>
+                ) : (
+                  <>
+                    <Send className="w-4 h-4" /> Submit Work
+                  </>
+                )}
+              </button>
+            </DialogFooter>
+          </form>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }

@@ -11,11 +11,13 @@ import {
   ChevronRight,
 } from "lucide-react";
 import { toast } from "sonner@2.0.3";
-import { projectApi } from "../../api/projects";
+import { useAuth } from "../../context/AuthContext";
+import { apiClient } from "../../utils/apiClient";
 import type { ProjectListOut } from "../../types/project";
 
 export function ProjectList() {
   const navigate = useNavigate();
+  const { user } = useAuth();
   const [projects, setProjects] = useState<ProjectListOut[]>([]);
   const [loading, setLoading] = useState(true);
 
@@ -23,7 +25,11 @@ export function ProjectList() {
     async function load() {
       try {
         setLoading(true);
-        const projData = await projectApi.list();
+        // Tier 1 → fetch from GET /api/v1/projects (all projects)
+        // Tier 2 + 3 → fetch from GET /api/v1/projects/mine (only assigned)
+        const isFullAccess = user?.role === "admin" || user?.role === "hr";
+        const endpoint = isFullAccess ? "/projects" : "/projects/mine";
+        const projData = await apiClient.get<ProjectListOut[]>(endpoint);
         setProjects(projData || []);
       } catch (err) {
         console.error("Failed to load projects:", err);
@@ -33,7 +39,7 @@ export function ProjectList() {
       }
     }
     load();
-  }, []);
+  }, [user?.role]);
 
   const statusStyles: Record<string, string> = {
     "In Progress": "bg-amber-100 text-amber-700 dark:bg-amber-950/50 dark:text-amber-300",

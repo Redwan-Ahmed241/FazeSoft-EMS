@@ -19,17 +19,20 @@ import {
   ListTodo,
   Flag,
   User as LucideUser,
+  ExternalLink,
 } from "lucide-react";
 import { toast } from "sonner@2.0.3";
 import { projectApi } from "../../api/projects";
 import { teamApi } from "../../api/teams";
 import { clientsApi } from "../../api/clients";
 import { taskApi } from "../../api/tasks";
+import { submissionApi } from "../../api/submissions";
 import { useAuth } from "../../context/AuthContext";
 import type { ProjectOut } from "../../types/project";
 import type { TeamWithMembersOut } from "../../types/team";
 import type { ClientOut } from "../../types/client";
 import type { TaskOut, TaskPriority, TaskStatus } from "../../types/task";
+import type { SubmissionOut } from "../../types/submission";
 import {
   Dialog,
   DialogContent,
@@ -82,6 +85,29 @@ export function ProjectDetail() {
   const [editStatus, setEditStatus] = useState<TaskStatus>("Todo");
   const [editAssignedTo, setEditAssignedTo] = useState("");
   const [editDeadline, setEditDeadline] = useState("");
+
+  // View submissions modal state
+  const [submissionModalOpen, setSubmissionModalOpen] = useState(false);
+  const [submissionsLoading, setSubmissionsLoading] = useState(false);
+  const [selectedTaskSubmissions, setSelectedTaskSubmissions] = useState<SubmissionOut[]>([]);
+  const [activeTaskForSubmissions, setActiveTaskForSubmissions] = useState<TaskOut | null>(null);
+
+  const openSubmissionsModal = async (task: TaskOut) => {
+    setActiveTaskForSubmissions(task);
+    setSubmissionModalOpen(true);
+    setSubmissionsLoading(true);
+    try {
+      const data = await submissionApi.listByTask(task.task_id);
+      setSelectedTaskSubmissions(data || []);
+    } catch (err: unknown) {
+      console.error("Failed to load task submissions:", err);
+      const message = err instanceof Error ? err.message : "Failed to load submissions";
+      toast.error(message);
+      setSelectedTaskSubmissions([]);
+    } finally {
+      setSubmissionsLoading(false);
+    }
+  };
 
   useEffect(() => {
     async function loadData() {
@@ -577,6 +603,18 @@ export function ProjectDetail() {
                     Assigned by: #{task.assigned_by.slice(0, 8)}
                   </div>
                 </div>
+
+                {canAssignTask && (
+                  <div className="pt-2 border-t border-border flex justify-end">
+                    <button
+                      type="button"
+                      onClick={() => openSubmissionsModal(task)}
+                      className="px-4 py-2 rounded-xl bg-muted/60 text-foreground border border-border font-medium text-sm hover:bg-muted transition cursor-pointer"
+                    >
+                      View Submissions
+                    </button>
+                  </div>
+                )}
               </div>
             ))}
           </div>
@@ -836,6 +874,89 @@ export function ProjectDetail() {
               </button>
             </DialogFooter>
           </form>
+        </DialogContent>
+      </Dialog>
+
+      {/* View Submissions Modal */}
+      <Dialog open={submissionModalOpen} onOpenChange={setSubmissionModalOpen}>
+        <DialogContent className="sm:max-w-lg bg-card border border-border">
+          <DialogHeader>
+            <DialogTitle className="flex items-center gap-2 text-lg font-bold text-foreground">
+              <CheckCircle2 className="w-5 h-5 text-primary" /> Task Submissions
+            </DialogTitle>
+            <DialogDescription className="text-xs text-muted-foreground">
+              {activeTaskForSubmissions?.title
+                ? `Review submitted work for "${activeTaskForSubmissions.title}"`
+                : "Submissions made for this task."}
+            </DialogDescription>
+          </DialogHeader>
+
+          <div className="py-3">
+            {submissionsLoading ? (
+              <div className="flex flex-col items-center justify-center py-8 gap-2">
+                <Loader2 className="w-6 h-6 animate-spin text-primary" />
+                <p className="text-xs text-muted-foreground">Loading submissions...</p>
+              </div>
+            ) : selectedTaskSubmissions.length === 0 ? (
+              <div className="flex flex-col items-center justify-center py-8 text-center bg-muted/20 border border-dashed border-border rounded-xl">
+                <p className="text-sm font-semibold text-muted-foreground">No submissions yet</p>
+                <p className="text-xs text-muted-foreground mt-1">
+                  The assignee has not submitted work for this task yet.
+                </p>
+              </div>
+            ) : (
+              <div className="space-y-3 max-h-[60vh] overflow-y-auto pr-1">
+                {selectedTaskSubmissions.map((sub) => (
+                  <div
+                    key={sub.submission_id}
+                    className="rounded-xl bg-card border border-border p-4 shadow-sm hover:shadow-md transition-shadow space-y-2.5"
+                  >
+                    <div className="flex items-center justify-between text-xs">
+                      <span className="font-semibold text-foreground flex items-center gap-1.5">
+                        <LucideUser className="w-3.5 h-3.5 text-primary" />
+                        {sub.submitted_by_name || `User #${sub.submitted_by.slice(0, 8)}`}
+                      </span>
+                      <span className="text-muted-foreground text-[11px] flex items-center gap-1">
+                        <Calendar className="w-3 h-3 text-muted-foreground" />
+                        {new Date(sub.submitted_at).toLocaleString()}
+                      </span>
+                    </div>
+
+                    {sub.commit_link && (
+                      <div className="text-xs">
+                        <span className="text-muted-foreground font-medium mr-1.5">Commit / PR:</span>
+                        <a
+                          href={sub.commit_link.startsWith("http") ? sub.commit_link : `https://${sub.commit_link}`}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          className="inline-flex items-center gap-1 text-primary hover:underline font-mono break-all"
+                        >
+                          {sub.commit_link}
+                          <ExternalLink className="w-3 h-3 shrink-0 inline" />
+                        </a>
+                      </div>
+                    )}
+
+                    {sub.notes && (
+                      <div className="text-xs text-muted-foreground bg-muted/30 p-2.5 rounded-lg border border-border/50 whitespace-pre-wrap leading-relaxed">
+                        {sub.notes}
+                      </div>
+                    )}
+                  </div>
+                ))}
+              </div>
+            )}
+          </div>
+
+          <DialogFooter>
+            <button
+              type="button"
+              onClick={() => setSubmissionModalOpen(false)}
+              className="px-4 py-2 rounded-xl bg-muted/60 text-foreground border border-border font-medium text-sm hover:bg-muted transition cursor-pointer"
+            >
+              Close
+            </button>
+          </DialogFooter>
         </DialogContent>
       </Dialog>
     </div>
