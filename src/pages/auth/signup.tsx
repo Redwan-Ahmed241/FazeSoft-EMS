@@ -74,7 +74,7 @@ export default function Signup() {
     }
     setLoading(true);
     try {
-      const res = await signup(form.email, form.password, `${form.firstName} ${form.lastName}`.trim(), role);
+      const res = await signup(form.email, form.password, `${form.firstName} ${form.lastName}`.trim());
       if (res && res.needsVerification) {
         // UI will switch via context state
       } else {
@@ -220,37 +220,8 @@ export default function Signup() {
               Join FazeMate
             </h1>
             <p style={{ color: 'rgba(255,255,255,0.6)', fontSize: '14px', lineHeight: 1.6, margin: 0 }}>
-              Follow these 3 quick phases to activate your space.
+              Create your account to get started with your workspace.
             </p>
-          </motion.div>
-
-          {/* Role picker */}
-          <motion.div variants={heroItem}>
-            <div style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
-              <p style={{ color: 'rgba(255,255,255,0.6)', fontSize: '13px', margin: 0 }}>Sign up as:</p>
-              <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '8px' }}>
-                <button type="button" onClick={() => setRole('hr')} style={{
-                  display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '6px',
-                  padding: '10px 4px', borderRadius: '12px', cursor: 'pointer', fontSize: '12px', fontWeight: 600,
-                  background: role === 'hr' ? '#fff' : 'rgba(255,255,255,0.08)',
-                  color: role === 'hr' ? '#000' : 'rgba(255,255,255,0.7)',
-                  border: role === 'hr' ? '2px solid #fff' : '1px solid rgba(255,255,255,0.15)',
-                  transition: 'all 0.2s',
-                }}>
-                  <Shield size={12} /> HR Manager
-                </button>
-                <button type="button" onClick={() => setRole('candidate')} style={{
-                  display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '6px',
-                  padding: '10px 4px', borderRadius: '12px', cursor: 'pointer', fontSize: '12px', fontWeight: 600,
-                  background: role === 'candidate' ? '#fff' : 'rgba(255,255,255,0.08)',
-                  color: role === 'candidate' ? '#000' : 'rgba(255,255,255,0.7)',
-                  border: role === 'candidate' ? '2px solid #fff' : '1px solid rgba(255,255,255,0.15)',
-                  transition: 'all 0.2s',
-                }}>
-                  <ClipboardList size={12} /> Candidate
-                </button>
-              </div>
-            </div>
           </motion.div>
         </motion.div>
       </div>

@@ -27,6 +27,20 @@ import { ProjectReview } from "./pages/projects/ProjectReview";
 import { ProjectDetail } from "./pages/projects/ProjectDetail";
 import { ProjectList } from "./pages/projects/ProjectList";
 import { EditProject } from "./pages/projects/EditProject";
+import { RoleManagement } from "./pages/roles/RoleManagement";
+import { Notepad } from "./pages/notepad/Notepad";
+import { useAuth } from "./context/AuthContext";
+
+const RoleManagementRoute = () => {
+  const { user } = useAuth();
+  const currentUser = user as (typeof user & { permissions?: string[] });
+  const canChangeRole = currentUser?.permissions?.includes("change_role");
+
+  if (!canChangeRole) {
+    return <Navigate to="/dashboard" replace />;
+  }
+  return <RoleManagement />;
+};
 
 const getBasename = (): string => {
   if (typeof window !== "undefined") {
@@ -89,18 +103,20 @@ export const router = createBrowserRouter([
       { path: "employees", Component: () => <ProtectedRoute allowedRoles={["hr", "admin"]}><Employees /></ProtectedRoute> },
       { path: "job-posting", Component: () => <ProtectedRoute allowedRoles={["hr", "admin"]}><JobPosting /></ProtectedRoute> },
       { path: "candidate", Component: () => <ProtectedRoute allowedRoles={["hr", "admin"]}><Candidate /></ProtectedRoute> },
-      { path: "projects", Component: () => <ProtectedRoute allowedRoles={["admin"]}><ProjectList /></ProtectedRoute> },
+      { path: "projects", Component: () => <ProtectedRoute allowedRoles={["admin", "hr", "employee"]}><ProjectList /></ProtectedRoute> },
       { path: "projects/create", Component: () => <ProtectedRoute allowedRoles={["hr", "admin"]}><CreateProject /></ProtectedRoute> },
       { path: "projects/create/team", Component: () => <ProtectedRoute allowedRoles={["hr", "admin"]}><CreateTeam /></ProtectedRoute> },
       { path: "projects/create/review", Component: () => <ProtectedRoute allowedRoles={["hr", "admin"]}><ProjectReview /></ProtectedRoute> },
       { path: "projects/:projectId/create-team", Component: () => <ProtectedRoute allowedRoles={["hr", "admin"]}><CreateTeam /></ProtectedRoute> },
       { path: "projects/:projectId/edit", Component: () => <ProtectedRoute allowedRoles={["admin"]}><EditProject /></ProtectedRoute> },
-      { path: "projects/:projectId", Component: () => <ProtectedRoute allowedRoles={["hr", "admin"]}><ProjectDetail /></ProtectedRoute> },
+      { path: "projects/:projectId", Component: () => <ProtectedRoute allowedRoles={["hr", "admin", "employee"]}><ProjectDetail /></ProtectedRoute> },
       { path: "calendar", Component: CalendarPage },
       { path: "resume-parsing", Component: ResumeParsing },
       { path: "tasks", Component: () => <ProtectedRoute allowedRoles={["employee"]}><MyTasks /></ProtectedRoute> },
       { path: "team", Component: () => <ProtectedRoute allowedRoles={["employee"]}><TeamProgress /></ProtectedRoute> },
       { path: "history", Component: () => <ProtectedRoute allowedRoles={["employee"]}><History /></ProtectedRoute> },
+      { path: "roles", Component: RoleManagementRoute },
+      { path: "notepad", Component: Notepad },
       { path: "profile", Component: Profile },
       { path: "settings", Component: Settings },
     ],

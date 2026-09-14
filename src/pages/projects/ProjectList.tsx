@@ -11,29 +11,46 @@ import {
   ChevronRight,
 } from "lucide-react";
 import { toast } from "sonner@2.0.3";
-import { projectApi } from "../../api/projects";
+import { useAuth } from "../../context/AuthContext";
+import { apiClient } from "../../utils/apiClient";
 import type { ProjectListOut } from "../../types/project";
 
 export function ProjectList() {
   const navigate = useNavigate();
+  const { user, isLoading: authLoading } = useAuth();
   const [projects, setProjects] = useState<ProjectListOut[]>([]);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
+    if (authLoading) return;
+    if (!user) {
+      setLoading(false);
+      return;
+    }
+
     async function load() {
       try {
         setLoading(true);
-        const projData = await projectApi.list();
+        // Admin, HR, CTO, Head of Ops have full access to all projects
+        const isFullAccess =
+          user?.role === "admin" ||
+          user?.role === "hr" ||
+          (user?.role as string) === "cto" ||
+          (user?.role as string) === "head_of_operations";
+
+        const endpoint = isFullAccess ? "/projects" : "/projects/mine";
+        const projData = await apiClient.get<ProjectListOut[]>(endpoint);
         setProjects(projData || []);
-      } catch (err) {
+      } catch (err: unknown) {
         console.error("Failed to load projects:", err);
-        toast.error("Failed to load projects.");
+        const message = err instanceof Error ? err.message : "Failed to load projects.";
+        toast.error(message);
       } finally {
         setLoading(false);
       }
     }
     load();
-  }, []);
+  }, [user?.role, authLoading]);
 
   const statusStyles: Record<string, string> = {
     "In Progress": "bg-amber-100 text-amber-700 dark:bg-amber-950/50 dark:text-amber-300",

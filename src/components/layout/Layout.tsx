@@ -1,6 +1,7 @@
 import { useState } from "react";
 import { useSharedContext } from "../../context/SharedContext";
-import { Link, Outlet, useLocation } from "react-router";
+import { Outlet, useLocation } from "react-router";
+import { Sidebar } from "./Sidebar";
 import InitialsAvatar from "../common/ui/InitialsAvatar";
 import { Toaster } from "sonner";
 import Frame35 from "../common/Frame35";
@@ -24,6 +25,7 @@ import {
   ClipboardList,
   ListTodo,
   FolderPlus,
+  NotebookPen,
 } from "lucide-react";
 import { History as HistoryIcon } from "lucide-react";
 
@@ -60,6 +62,7 @@ const allMenuItems = [
   { path: "/dashboard/team",          icon: Users,           label: "Team Progress", roles: ["employee"] },
   { path: "/dashboard/history",       icon: HistoryIcon,     label: "My History",  roles: ["employee"] },
   { path: "/dashboard/report",        icon: FileText,        label: "Reports",    roles: ["hr", "admin"] },
+  { path: "/dashboard/notepad",       icon: NotebookPen,     label: "Notepad",    roles: ["hr", "candidate", "admin", "employee"] },
   { path: "/dashboard/profile",       icon: User,            label: "Profile",    roles: ["hr", "candidate", "admin", "employee"] },
   { path: "/dashboard/settings",      icon: SettingsIcon,    label: "Settings",   roles: ["hr", "candidate", "admin", "employee"] },
 ];
@@ -108,91 +111,7 @@ export function Layout() {
   return (
     <div className="min-h-screen bg-background">
       {/* Sidebar */}
-      <aside
-        className={`fixed left-0 top-0 z-40 h-screen w-64 bg-card border-r border-border transition-transform duration-300 ${
-          sidebarOpen ? "translate-x-0" : "-translate-x-full"
-        } lg:translate-x-0`}
-      >
-        <div className="flex h-full flex-col">
-          {/* Logo */}
-          <div className="flex h-16 items-center px-6 border-b border-border">
-            <Frame35 />
-          </div>
-
-          {/* User Profile */}
-          <div className="flex items-center gap-3 border-b border-border px-6 py-4">
-            <InitialsAvatar
-              name={user?.name && !user.name.includes("@") ? user.name : user?.email?.split("@")[0] || "User"}
-              src={user?.avatar}
-              size="md"
-            />
-            <div className="flex-1 min-w-0">
-              <div className="text-sm font-semibold text-foreground truncate">
-                {user?.name && !user.name.includes("@")
-                  ? user.name
-                  : user?.email?.split("@")[0] || "User"}
-              </div>
-              <div className="text-[11px] text-muted-foreground truncate">{user?.email}</div>
-              <div className="flex items-center gap-1.5 mt-0.5">
-                {user?.role === "admin" ? (
-                  <span className="inline-flex items-center gap-1 rounded-full bg-red-100 px-2 py-0.5 text-[10px] font-semibold text-red-700">
-                    <Shield className="h-2.5 w-2.5" /> Admin User
-                  </span>
-                ) : user?.role === "hr" ? (
-                  <span className="inline-flex items-center gap-1 rounded-full bg-primary/10 px-2 py-0.5 text-[10px] font-semibold text-primary">
-                    <Shield className="h-2.5 w-2.5" /> HR Manager
-                  </span>
-                ) : user?.role === "employee" ? (
-                  <span className="inline-flex items-center gap-1 rounded-full bg-green-100 px-2 py-0.5 text-[10px] font-semibold text-green-700">
-                    <Users className="h-2.5 w-2.5" /> Employee
-                  </span>
-                ) : (
-                  <span className="inline-flex items-center gap-1 rounded-full bg-blue-100 px-2 py-0.5 text-[10px] font-semibold text-blue-700">
-                    <ClipboardList className="h-2.5 w-2.5" /> Candidate
-                  </span>
-                )}
-              </div>
-            </div>
-          </div>
-
-          {/* Navigation */}
-          <nav className="flex-1 overflow-y-auto px-3 py-4">
-            <ul className="space-y-1">
-              {menuItems.map((item) => {
-                const Icon = item.icon;
-                const active = isActive(item.path);
-                return (
-                  <li key={item.label}>
-                    <Link
-                      to={item.path}
-                      onClick={() => setSidebarOpen(false)}
-                      className={`flex items-center gap-3 rounded-xl px-3 py-2.5 text-sm font-medium transition-all ${
-                        active
-                          ? "bg-primary text-primary-foreground shadow-lg shadow-primary/25"
-                          : "text-sidebar-foreground hover:bg-sidebar-accent hover:text-sidebar-accent-foreground"
-                      }`}
-                    >
-                      <Icon className="h-5 w-5" />
-                      <span>{item.label}</span>
-                    </Link>
-                  </li>
-                );
-              })}
-            </ul>
-          </nav>
-
-          {/* Sidebar logout (bottom) */}
-          <div className="border-t border-border p-3">
-            <button
-              onClick={logout}
-              className="flex w-full items-center gap-3 rounded-xl px-3 py-2.5 text-sm font-medium text-muted-foreground hover:bg-destructive/10 hover:text-destructive transition-all"
-            >
-              <LogOut className="h-5 w-5" />
-              <span>Sign Out</span>
-            </button>
-          </div>
-        </div>
-      </aside>
+      <Sidebar sidebarOpen={sidebarOpen} setSidebarOpen={setSidebarOpen} />
 
       {/* Mobile overlay */}
       {sidebarOpen && (

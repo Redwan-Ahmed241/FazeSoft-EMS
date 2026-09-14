@@ -8,6 +8,8 @@ export interface User {
   name?: string;
   id?: string;
   role: UserRole;
+  role_name?: string;
+  role_desc?: string;
   phone?: string;
   location?: string;
   job_title?: string;
@@ -29,6 +31,7 @@ export interface User {
   emergency_contact?: string;
   date_of_exit?: string;
   last_salary?: string;
+  permissions?: string[];
 }
 
 interface AuthContextType {
@@ -36,7 +39,7 @@ interface AuthContextType {
   isAuthenticated: boolean;
   isLoading: boolean;
   login:  (email: string, password: string) => Promise<void>;
-  signup: (email: string, password: string, name: string, role?: UserRole) => Promise<{ needsVerification: boolean }>;
+  signup: (email: string, password: string, name: string) => Promise<{ needsVerification: boolean }>;
   logout: () => void;
   updateProfile: (updatedData: Partial<User>) => Promise<void>;
   pendingVerification: boolean;
@@ -55,22 +58,36 @@ const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
 const LS_USER = 'fazemate_user';
 
+function normalizeRole(backendRole?: string | null): UserRole {
+  if (!backendRole) return 'candidate';
+  const lower = backendRole.toLowerCase().trim();
+  if (lower.includes('hr') || lower.includes('human resources')) return 'hr';
+  if (lower.includes('cto') || lower.includes('admin') || lower.includes('chief technology officer') || lower.includes('head')) return 'admin';
+  if (lower.includes('candidate')) return 'candidate';
+  return 'employee';
+}
+
 function toUser(u: {
   id: string;
   email: string;
   full_name?: string | null;
   role: string;
+  role_name?: string | null;
+  role_desc?: string | null;
   phone?: string | null;
   location?: string | null;
   job_title?: string | null;
   bio?: string | null;
   avatar?: string | null;
+  permissions?: string[];
 }): User {
   return {
     id: u.id,
     email: u.email,
     name: u.full_name || '',
-    role: (u.role as UserRole) ?? 'employee',
+    role: normalizeRole(u.role_name || u.role),
+    role_name: u.role_name || u.role || '',
+    role_desc: u.role_desc || '',
     phone: u.phone || '',
     location: u.location || '',
     job_title: u.job_title || '',
@@ -80,6 +97,7 @@ function toUser(u: {
     employee_id: '',
     joining_date: '',
     employment_status: 'Active',
+    permissions: u.permissions || [],
   };
 }
 
@@ -95,11 +113,9 @@ async function backendLogin(email: string, password: string): Promise<User> {
 async function backendSignup(
   email: string,
   password: string,
-  name: string,
-  role: UserRole
+  name: string
 ): Promise<User> {
   const data = await authApi.signup({ email, password, full_name: name });
-  // The backend always creates a token on signup; role defaults to candidate there.
   localStorage.setItem('token', data.access_token);
   const u = toUser(data.user);
   localStorage.setItem(LS_USER, JSON.stringify(u));
@@ -113,11 +129,37 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
   const [pendingVerification, setPendingVerification] = useState(false);
   const [pendingEmail, setPendingEmail] = useState('');
 
-  // Restore session from localStorage
+  // Restore session from localStorage and refresh from backend
   useEffect(() => {
-    const stored = localStorage.getItem(LS_USER);
-    if (stored) { try { setUser(JSON.parse(stored)); } catch { localStorage.removeItem(LS_USER); } }
-    setIsLoading(false);
+    const init = async () => {
+      const stored = localStorage.getItem(LS_USER);
+      if (stored) {
+        try {
+          setUser(JSON.parse(stored));
+        } catch {
+          localStorage.removeItem(LS_USER);
+        }
+      }
+      const token = localStorage.getItem('token');
+      if (token) {
+        try {
+          const fresh = await authApi.me();
+          const refreshedUser = toUser(fresh);
+          setUser(refreshedUser);
+          localStorage.setItem(LS_USER, JSON.stringify(refreshedUser));
+        } catch {
+          // Expired or invalid token — purge stale session
+          localStorage.removeItem('token');
+          localStorage.removeItem(LS_USER);
+          setUser(null);
+        }
+      } else {
+        localStorage.removeItem(LS_USER);
+        setUser(null);
+      }
+      setIsLoading(false);
+    };
+    init();
   }, []);
 
   const login = async (email: string, password: string) => {
@@ -125,8 +167,8 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
     setUser(u);
   };
 
-  const signup = async (email: string, password: string, name: string, role: UserRole = 'candidate') => {
-    const u = await backendSignup(email, password, name, role);
+  const signup = async (email: string, password: string, name: string) => {
+    const u = await backendSignup(email, password, name);
     setUser(u);
     return { needsVerification: false };
   };

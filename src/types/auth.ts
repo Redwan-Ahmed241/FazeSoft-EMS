@@ -25,6 +25,8 @@ export interface UserOut {
   email: string;
   full_name: string | null;
   role: string;
+  role_name?: string | null;
+  role_desc?: string | null;
   phone: string | null;
   location: string | null;
   job_title: string | null;
@@ -32,10 +34,15 @@ export interface UserOut {
   avatar: string | null;
   is_active: boolean;
   created_at: string;
+  permissions?: string[];
 }
 
 export interface Token {
   access_token: string;
   token_type: string;
   user: UserOut;
+}
+
+export interface RoleChangeRequest {
+  role_name: string;
 }

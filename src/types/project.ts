@@ -5,6 +5,7 @@ export interface ProjectFormData {
   projectCode: string;
   description: string;
   clientId: string;
+  managerId?: string;
   startDate: string;
   endDate: string;
 }
@@ -14,6 +15,7 @@ export interface ProjectCreate {
   project_code: string;
   description: string;
   client_id: string;
+  manager_id?: string;
   start_date: string;
   end_date: string;
 }
@@ -23,6 +25,7 @@ export interface ProjectUpdate {
   project_code?: string;
   description?: string;
   client_id?: string;
+  manager_id?: string;
   start_date?: string;
   end_date?: string;
 }

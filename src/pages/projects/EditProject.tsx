@@ -59,27 +59,22 @@ export function EditProject() {
       if (!projectId) return;
       try {
         setLoading(true);
-        const [proj, clientList, teamsData] = await Promise.all([
+        const [proj, clientList, teamsData, users] = await Promise.all([
           projectApi.get(projectId),
           clientsApi.list().catch(() => [] as ClientOut[]),
           teamApi.getProjectTeams(projectId).catch(() => [] as TeamWithMembersOut[]),
+          authApi.listUsers().catch(() => [] as UserOut[]),
         ]);
         setProject(proj);
         setClients(clientList);
         setTeams(teamsData || []);
+        setAllUsers(users || []);
         setProjectName(proj.project_name);
         setProjectCode(proj.project_code);
         setDescription(proj.description);
         setClientId(proj.client_id);
         setStartDate(proj.start_date);
         setEndDate(proj.end_date);
-
-        try {
-          const users = await authApi.listUsers();
-          setAllUsers(users || []);
-        } catch (err) {
-          console.warn("Could not load users for member picker:", err);
-        }
       } catch (err) {
         console.error("Failed to load project:", err);
         toast.error("Failed to load project.");
@@ -262,14 +257,27 @@ export function EditProject() {
 
         {/* Current members */}
         <div className="flex flex-wrap gap-2">
-          {currentMembers.map((m) => (
-            <span key={m.user_id} className="inline-flex items-center gap-1.5 px-3 py-1 rounded-xl border border-border bg-background/50 text-xs font-medium">
-              <span className={m.role === "front_end" ? "text-blue-600" : "text-emerald-600"}>
-                {m.role === "front_end" ? "FE" : "BE"}
+          {currentMembers.map((m) => {
+            const userObj = allUsers.find((u) => u.id === m.user_id);
+            const name = userObj?.full_name || userObj?.email?.split("@")[0] || `Member #${m.user_id.slice(0, 8)}`;
+            return (
+              <span
+                key={m.user_id}
+                className="inline-flex items-center gap-1.5 px-3 py-1 rounded-xl border border-border bg-background/50 text-xs font-medium"
+                title={userObj?.email || ""}
+              >
+                <span className={m.role === "front_end" ? "text-blue-600 font-semibold" : "text-emerald-600 font-semibold"}>
+                  {m.role === "front_end" ? "FE" : "BE"}
+                </span>
+                <span>{name}</span>
+                {userObj?.email && (
+                  <span className="text-[10px] text-muted-foreground font-normal">
+                    ({userObj.email})
+                  </span>
+                )}
               </span>
-              Member #{m.user_id.slice(0, 8)}
-            </span>
-          ))}
+            );
+          })}
           {currentMembers.length === 0 && (
             <p className="text-xs text-muted-foreground italic">
               {cardKey === NEW_TEAM_KEY ? "No team yet — a new team will be created on Save." : "No members yet."}

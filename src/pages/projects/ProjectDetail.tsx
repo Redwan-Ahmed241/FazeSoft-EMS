@@ -19,17 +19,22 @@ import {
   ListTodo,
   Flag,
   User as LucideUser,
+  ExternalLink,
 } from "lucide-react";
 import { toast } from "sonner@2.0.3";
 import { projectApi } from "../../api/projects";
 import { teamApi } from "../../api/teams";
 import { clientsApi } from "../../api/clients";
 import { taskApi } from "../../api/tasks";
+import { submissionApi } from "../../api/submissions";
+import { authApi } from "../../api/auth";
 import { useAuth } from "../../context/AuthContext";
 import type { ProjectOut } from "../../types/project";
 import type { TeamWithMembersOut } from "../../types/team";
 import type { ClientOut } from "../../types/client";
 import type { TaskOut, TaskPriority, TaskStatus } from "../../types/task";
+import type { SubmissionOut } from "../../types/submission";
+import type { UserOut } from "../../types/auth";
 import {
   Dialog,
   DialogContent,
@@ -58,6 +63,7 @@ export function ProjectDetail() {
   const [project, setProject] = useState<ProjectOut | null>(null);
   const [teams, setTeams] = useState<TeamWithMembersOut[]>([]);
   const [client, setClient] = useState<ClientOut | null>(null);
+  const [allUsers, setAllUsers] = useState<UserOut[]>([]);
 
   // Task section state
   const [tasks, setTasks] = useState<TaskOut[]>([]);
@@ -83,27 +89,64 @@ export function ProjectDetail() {
   const [editAssignedTo, setEditAssignedTo] = useState("");
   const [editDeadline, setEditDeadline] = useState("");
 
+  // View submissions modal state
+  const [submissionModalOpen, setSubmissionModalOpen] = useState(false);
+  const [submissionsLoading, setSubmissionsLoading] = useState(false);
+  const [selectedTaskSubmissions, setSelectedTaskSubmissions] = useState<SubmissionOut[]>([]);
+  const [activeTaskForSubmissions, setActiveTaskForSubmissions] = useState<TaskOut | null>(null);
+
+  const openSubmissionsModal = async (task: TaskOut) => {
+    setActiveTaskForSubmissions(task);
+    setSubmissionModalOpen(true);
+    setSubmissionsLoading(true);
+    try {
+      const data = await submissionApi.listByTask(task.task_id);
+      setSelectedTaskSubmissions(data || []);
+    } catch (err: unknown) {
+      console.error("Failed to load task submissions:", err);
+      const message = err instanceof Error ? err.message : "Failed to load submissions";
+      toast.error(message);
+      setSelectedTaskSubmissions([]);
+    } finally {
+      setSubmissionsLoading(false);
+    }
+  };
+
   useEffect(() => {
     async function loadData() {
       if (!projectId) return;
       try {
         setLoading(true);
-        // Load project
-        const projData = await projectApi.get(projectId);
-        setProject(projData);
 
-        // Load project teams
-        try {
-          const teamsData = await teamApi.getProjectTeams(projectId);
-          setTeams(teamsData || []);
-        } catch (teamErr) {
-          console.warn("Could not load project teams:", teamErr);
+        // Fetch project, teams, and users concurrently
+        const [projRes, teamsRes, usersRes] = await Promise.allSettled([
+          projectApi.get(projectId),
+          teamApi.getProjectTeams(projectId),
+          authApi.listUsers(),
+        ]);
+
+        let loadedProj: ProjectOut | null = null;
+        if (projRes.status === "fulfilled") {
+          loadedProj = projRes.value;
+          setProject(loadedProj);
+        } else {
+          console.error("Failed to load project details:", projRes.reason);
+          const msg = projRes.reason instanceof Error ? projRes.reason.message : "Failed to load project details.";
+          toast.error(msg);
         }
 
-        // Load client
-        if (projData?.client_id) {
+        if (teamsRes.status === "fulfilled") {
+          setTeams(teamsRes.value || []);
+        }
+
+        if (usersRes.status === "fulfilled") {
+          setAllUsers(usersRes.value || []);
+        }
+
+        // Load client if present
+        if (loadedProj?.client_id) {
           try {
-            const clientData = await clientsApi.get(projData.client_id);
+            const clientData = await clientsApi.get(loadedProj.client_id);
             setClient(clientData);
           } catch (clientErr) {
             console.warn("Could not load client details:", clientErr);
@@ -133,6 +176,30 @@ export function ProjectDetail() {
       setTasksLoading(false);
     }
   }
+
+  // Map user ID to user object for rapid display lookup
+  const userMap = new Map(allUsers.map((u) => [u.id, u]));
+
+  const getUserDisplayName = (userId: string) => {
+    const found = userMap.get(userId);
+    if (!found) return `Member #${userId.slice(0, 8)}`;
+    return found.full_name || found.email.split("@")[0] || `Member #${userId.slice(0, 8)}`;
+  };
+
+  const getUserEmail = (userId: string) => {
+    const found = userMap.get(userId);
+    return found?.email || "";
+  };
+
+  const getUserLabel = (userId: string, role?: string) => {
+    const found = userMap.get(userId);
+    const roleSuffix = role ? ` (${role})` : "";
+    if (found) {
+      const name = found.full_name || found.email.split("@")[0];
+      return `${name} <${found.email}>${roleSuffix}`;
+    }
+    return `Member #${userId.slice(0, 8)}${roleSuffix}`;
+  };
 
   // Unique team members across all teams assigned to this project
   const projectTeamMembers = Array.from(
@@ -400,34 +467,40 @@ export function ProjectDetail() {
                 {/* Member Badges & Grid */}
                 <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-3 pt-1">
                   {t.members && t.members.length > 0 ? (
-                    t.members.map((m) => (
-                      <div
-                        key={m.user_id}
-                        className="flex items-center justify-between p-3 rounded-xl border border-border bg-background/50 hover:bg-background transition"
-                      >
-                        <div className="flex items-center gap-2.5 min-w-0">
-                          <div className="w-8 h-8 rounded-full bg-primary/10 text-primary text-xs flex items-center justify-center font-bold flex-shrink-0">
-                            {m.user_id.slice(0, 2).toUpperCase()}
-                          </div>
-                          <div className="min-w-0">
-                            <p className="text-xs font-semibold text-foreground truncate">
-                              Member #{m.user_id.slice(0, 8)}
-                            </p>
-                            <p className="text-[10px] text-muted-foreground">Joined squad</p>
-                          </div>
-                        </div>
-
-                        <span
-                          className={`text-[10px] font-semibold px-2 py-0.5 rounded-md uppercase tracking-wider ${
-                            m.role === "front_end"
-                              ? "bg-blue-100 text-blue-700 dark:bg-blue-950/60 dark:text-blue-300"
-                              : "bg-emerald-100 text-emerald-700 dark:bg-emerald-950/60 dark:text-emerald-300"
-                          }`}
+                    t.members.map((m) => {
+                      const displayName = getUserDisplayName(m.user_id);
+                      const email = getUserEmail(m.user_id);
+                      return (
+                        <div
+                          key={m.user_id}
+                          className="flex items-center justify-between p-3 rounded-xl border border-border bg-background/50 hover:bg-background transition"
                         >
-                          {m.role}
-                        </span>
-                      </div>
-                    ))
+                          <div className="flex items-center gap-2.5 min-w-0">
+                            <div className="w-8 h-8 rounded-full bg-primary/10 text-primary text-xs flex items-center justify-center font-bold flex-shrink-0">
+                              {displayName.slice(0, 2).toUpperCase()}
+                            </div>
+                            <div className="min-w-0">
+                              <p className="text-xs font-semibold text-foreground truncate" title={displayName}>
+                                {displayName}
+                              </p>
+                              <p className="text-[10px] text-muted-foreground truncate" title={email}>
+                                {email || "Joined squad"}
+                              </p>
+                            </div>
+                          </div>
+
+                          <span
+                            className={`text-[10px] font-semibold px-2 py-0.5 rounded-md uppercase tracking-wider flex-shrink-0 ${
+                              m.role === "front_end"
+                                ? "bg-blue-100 text-blue-700 dark:bg-blue-950/60 dark:text-blue-300"
+                                : "bg-emerald-100 text-emerald-700 dark:bg-emerald-950/60 dark:text-emerald-300"
+                            }`}
+                          >
+                            {m.role}
+                          </span>
+                        </div>
+                      );
+                    })
                   ) : (
                     <p className="text-xs text-muted-foreground italic col-span-3">
                       No members attached to this team yet.
@@ -563,9 +636,9 @@ export function ProjectDetail() {
                 </p>
 
                 <div className="pt-2 border-t border-border flex flex-wrap items-center justify-between gap-2 text-[11px] text-muted-foreground">
-                  <div className="flex items-center gap-1">
+                  <div className="flex items-center gap-1" title={getUserEmail(task.assigned_to)}>
                     <LucideUser className="w-3.5 h-3.5 text-primary" />
-                    <span>Assignee: #{task.assigned_to.slice(0, 8)}</span>
+                    <span>Assignee: <strong className="text-foreground font-medium">{getUserDisplayName(task.assigned_to)}</strong></span>
                   </div>
 
                   <div className="flex items-center gap-1">
@@ -573,10 +646,22 @@ export function ProjectDetail() {
                     <span>Due: {task.deadline}</span>
                   </div>
 
-                  <div className="w-full text-[10px] text-muted-foreground/70 truncate">
-                    Assigned by: #{task.assigned_by.slice(0, 8)}
+                  <div className="w-full text-[10px] text-muted-foreground/70 truncate" title={getUserEmail(task.assigned_by)}>
+                    Assigned by: {getUserDisplayName(task.assigned_by)}
                   </div>
                 </div>
+
+                {canAssignTask && (
+                  <div className="pt-2 border-t border-border flex justify-end">
+                    <button
+                      type="button"
+                      onClick={() => openSubmissionsModal(task)}
+                      className="px-4 py-2 rounded-xl bg-muted/60 text-foreground border border-border font-medium text-sm hover:bg-muted transition cursor-pointer"
+                    >
+                      View Submissions
+                    </button>
+                  </div>
+                )}
               </div>
             ))}
           </div>
@@ -672,7 +757,7 @@ export function ProjectDetail() {
                   <option value="">-- Select Team Member --</option>
                   {projectTeamMembers.map((m) => (
                     <option key={m.user_id} value={m.user_id}>
-                      Member #{m.user_id.slice(0, 8)} ({m.role})
+                      {getUserLabel(m.user_id, m.role)}
                     </option>
                   ))}
                 </select>
@@ -804,7 +889,7 @@ export function ProjectDetail() {
                 >
                   {projectTeamMembers.map((m) => (
                     <option key={m.user_id} value={m.user_id}>
-                      Member #{m.user_id.slice(0, 8)} ({m.role})
+                      {getUserLabel(m.user_id, m.role)}
                     </option>
                   ))}
                 </select>
@@ -836,6 +921,89 @@ export function ProjectDetail() {
               </button>
             </DialogFooter>
           </form>
+        </DialogContent>
+      </Dialog>
+
+      {/* View Submissions Modal */}
+      <Dialog open={submissionModalOpen} onOpenChange={setSubmissionModalOpen}>
+        <DialogContent className="sm:max-w-lg bg-card border border-border">
+          <DialogHeader>
+            <DialogTitle className="flex items-center gap-2 text-lg font-bold text-foreground">
+              <CheckCircle2 className="w-5 h-5 text-primary" /> Task Submissions
+            </DialogTitle>
+            <DialogDescription className="text-xs text-muted-foreground">
+              {activeTaskForSubmissions?.title
+                ? `Review submitted work for "${activeTaskForSubmissions.title}"`
+                : "Submissions made for this task."}
+            </DialogDescription>
+          </DialogHeader>
+
+          <div className="py-3">
+            {submissionsLoading ? (
+              <div className="flex flex-col items-center justify-center py-8 gap-2">
+                <Loader2 className="w-6 h-6 animate-spin text-primary" />
+                <p className="text-xs text-muted-foreground">Loading submissions...</p>
+              </div>
+            ) : selectedTaskSubmissions.length === 0 ? (
+              <div className="flex flex-col items-center justify-center py-8 text-center bg-muted/20 border border-dashed border-border rounded-xl">
+                <p className="text-sm font-semibold text-muted-foreground">No submissions yet</p>
+                <p className="text-xs text-muted-foreground mt-1">
+                  The assignee has not submitted work for this task yet.
+                </p>
+              </div>
+            ) : (
+              <div className="space-y-3 max-h-[60vh] overflow-y-auto pr-1">
+                {selectedTaskSubmissions.map((sub) => (
+                  <div
+                    key={sub.submission_id}
+                    className="rounded-xl bg-card border border-border p-4 shadow-sm hover:shadow-md transition-shadow space-y-2.5"
+                  >
+                    <div className="flex items-center justify-between text-xs">
+                      <span className="font-semibold text-foreground flex items-center gap-1.5" title={getUserEmail(sub.submitted_by)}>
+                        <LucideUser className="w-3.5 h-3.5 text-primary" />
+                        {sub.submitted_by_name || getUserDisplayName(sub.submitted_by)}
+                      </span>
+                      <span className="text-muted-foreground text-[11px] flex items-center gap-1">
+                        <Calendar className="w-3 h-3 text-muted-foreground" />
+                        {new Date(sub.submitted_at).toLocaleString()}
+                      </span>
+                    </div>
+
+                    {sub.commit_link && (
+                      <div className="text-xs">
+                        <span className="text-muted-foreground font-medium mr-1.5">Commit / PR:</span>
+                        <a
+                          href={sub.commit_link.startsWith("http") ? sub.commit_link : `https://${sub.commit_link}`}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          className="inline-flex items-center gap-1 text-primary hover:underline font-mono break-all"
+                        >
+                          {sub.commit_link}
+                          <ExternalLink className="w-3 h-3 shrink-0 inline" />
+                        </a>
+                      </div>
+                    )}
+
+                    {sub.notes && (
+                      <div className="text-xs text-muted-foreground bg-muted/30 p-2.5 rounded-lg border border-border/50 whitespace-pre-wrap leading-relaxed">
+                        {sub.notes}
+                      </div>
+                    )}
+                  </div>
+                ))}
+              </div>
+            )}
+          </div>
+
+          <DialogFooter>
+            <button
+              type="button"
+              onClick={() => setSubmissionModalOpen(false)}
+              className="px-4 py-2 rounded-xl bg-muted/60 text-foreground border border-border font-medium text-sm hover:bg-muted transition cursor-pointer"
+            >
+              Close
+            </button>
+          </DialogFooter>
         </DialogContent>
       </Dialog>
     </div>
