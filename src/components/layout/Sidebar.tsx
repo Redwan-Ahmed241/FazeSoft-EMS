@@ -17,6 +17,7 @@ import {
   LogOut,
   History as HistoryIcon,
   ShieldCheck,
+  NotebookPen,
 } from "lucide-react";
 import Frame35 from "../common/Frame35";
 import InitialsAvatar from "../common/ui/InitialsAvatar";
@@ -46,6 +47,7 @@ const tier1AndCandidateMenuItems = [
   { path: "/dashboard/resume-parsing", icon: FileSearch, label: "Analyse Resumes", roles: ["hr", "admin"] },
   { path: "/dashboard/resume-parsing", icon: FileSearch, label: "My Resume", roles: ["candidate"] },
   { path: "/dashboard/report", icon: FileText, label: "Reports", roles: ["hr", "admin"] },
+  { path: "/dashboard/notepad", icon: NotebookPen, label: "Notepad", roles: ["hr", "candidate", "admin"] },
   { path: "/dashboard/profile", icon: User, label: "Profile", roles: ["hr", "candidate", "admin"] },
   { path: "/dashboard/settings", icon: SettingsIcon, label: "Settings", roles: ["hr", "candidate", "admin"] },
 ];
@@ -56,6 +58,7 @@ const tier2MenuItems: MenuItem[] = [
   { label: "Projects", path: "/dashboard/projects", icon: Briefcase },
   { label: "My Team", path: "/dashboard/team", icon: Users },
   { label: "Tasks", path: "/dashboard/tasks", icon: ListTodo },
+  { label: "Notepad", path: "/dashboard/notepad", icon: NotebookPen },
   { label: "Profile", path: "/dashboard/profile", icon: User },
   { label: "Settings", path: "/dashboard/settings", icon: SettingsIcon },
 ];
@@ -65,6 +68,7 @@ const tier3MenuItems: MenuItem[] = [
   { label: "Dashboard", path: "/dashboard", icon: LayoutDashboard },
   { label: "Projects", path: "/dashboard/projects", icon: Briefcase },
   { label: "My Tasks", path: "/dashboard/tasks", icon: ListTodo },
+  { label: "Notepad", path: "/dashboard/notepad", icon: NotebookPen },
   { label: "Profile", path: "/dashboard/profile", icon: User },
   { label: "Settings", path: "/dashboard/settings", icon: SettingsIcon },
 ];

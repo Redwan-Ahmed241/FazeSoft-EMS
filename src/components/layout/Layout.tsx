@@ -25,6 +25,7 @@ import {
   ClipboardList,
   ListTodo,
   FolderPlus,
+  NotebookPen,
 } from "lucide-react";
 import { History as HistoryIcon } from "lucide-react";
 
@@ -61,6 +62,7 @@ const allMenuItems = [
   { path: "/dashboard/team",          icon: Users,           label: "Team Progress", roles: ["employee"] },
   { path: "/dashboard/history",       icon: HistoryIcon,     label: "My History",  roles: ["employee"] },
   { path: "/dashboard/report",        icon: FileText,        label: "Reports",    roles: ["hr", "admin"] },
+  { path: "/dashboard/notepad",       icon: NotebookPen,     label: "Notepad",    roles: ["hr", "candidate", "admin", "employee"] },
   { path: "/dashboard/profile",       icon: User,            label: "Profile",    roles: ["hr", "candidate", "admin", "employee"] },
   { path: "/dashboard/settings",      icon: SettingsIcon,    label: "Settings",   roles: ["hr", "candidate", "admin", "employee"] },
 ];

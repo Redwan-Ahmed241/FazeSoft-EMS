@@ -148,8 +148,14 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
           setUser(refreshedUser);
           localStorage.setItem(LS_USER, JSON.stringify(refreshedUser));
         } catch {
-          // Keep stored or clear on 401
+          // Expired or invalid token — purge stale session
+          localStorage.removeItem('token');
+          localStorage.removeItem(LS_USER);
+          setUser(null);
         }
+      } else {
+        localStorage.removeItem(LS_USER);
+        setUser(null);
       }
       setIsLoading(false);
     };

@@ -1,0 +1,582 @@
+/*
+ * Notepad styles.
+ *
+ * Scoped to the `np-` prefix and written against the theme custom properties
+ * declared in index.css, so light/dark follow the rest of the dashboard.
+ */
+
+.np-panel {
+  background: var(--card);
+  border: 1px solid var(--border);
+  border-radius: 1rem;
+  box-shadow: 0 1px 2px rgb(0 0 0 / 0.05);
+  overflow: hidden;
+}
+
+.np-center {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+  padding: 3rem 1.5rem;
+  min-height: 18rem;
+}
+
+.np-spinner {
+  width: 2rem;
+  height: 2rem;
+  border-radius: 9999px;
+  border: 3px solid color-mix(in oklab, var(--primary) 25%, transparent);
+  border-top-color: var(--primary);
+  animation: np-spin 0.7s linear infinite;
+}
+
+@keyframes np-spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+.np-empty-icon {
+  width: 2.5rem;
+  height: 2.5rem;
+  color: color-mix(in oklab, var(--muted-foreground) 40%, transparent);
+}
+
+/* ── Tab bar ─────────────────────────────────────────────── */
+
+.np-tabs {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  padding: 0.625rem 0.75rem;
+  border-bottom: 1px solid var(--border);
+  background: color-mix(in oklab, var(--muted) 40%, transparent);
+}
+
+.np-tablist {
+  display: flex;
+  align-items: center;
+  gap: 0.375rem;
+  flex: 1;
+  min-width: 0;
+  overflow-x: auto;
+  scrollbar-width: thin;
+}
+
+.np-tab {
+  display: flex;
+  align-items: center;
+  gap: 0.125rem;
+  flex-shrink: 0;
+  border-radius: 0.625rem;
+  border: 1px solid transparent;
+  background: transparent;
+  transition: background 0.15s, color 0.15s, border-color 0.15s;
+}
+
+.np-tab:hover {
+  background: var(--card);
+  border-color: var(--border);
+}
+
+.np-tab.is-active {
+  background: var(--card);
+  border-color: var(--border);
+  box-shadow: 0 1px 2px rgb(0 0 0 / 0.06);
+}
+
+.np-tab-label {
+  max-width: 11rem;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  padding: 0.4rem 0.625rem;
+  font-size: 0.8125rem;
+  font-weight: 500;
+  color: var(--muted-foreground);
+  background: none;
+  border: 0;
+  cursor: pointer;
+}
+
+.np-tab.is-active .np-tab-label {
+  color: var(--primary);
+  font-weight: 600;
+}
+
+.np-tab-input {
+  width: 9rem;
+  margin: 0.25rem;
+  padding: 0.3rem 0.5rem;
+  font-size: 0.8125rem;
+  font-weight: 500;
+  color: var(--foreground);
+  background: var(--input-background, var(--background));
+  border: 1px solid var(--primary);
+  border-radius: 0.5rem;
+  outline: none;
+}
+
+.np-tab-delete {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin-right: 0.3rem;
+  padding: 0.2rem;
+  border: 0;
+  border-radius: 9999px;
+  background: none;
+  color: var(--muted-foreground);
+  cursor: pointer;
+}
+
+.np-tab-delete:hover {
+  background: color-mix(in oklab, var(--destructive) 12%, transparent);
+  color: var(--destructive);
+}
+
+.np-tab-add {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.3rem;
+  flex-shrink: 0;
+  padding: 0.4rem 0.7rem;
+  font-size: 0.8125rem;
+  font-weight: 600;
+  color: var(--primary);
+  background: color-mix(in oklab, var(--primary) 8%, transparent);
+  border: 1px dashed color-mix(in oklab, var(--primary) 35%, transparent);
+  border-radius: 0.625rem;
+  cursor: pointer;
+}
+
+.np-tab-add:hover {
+  background: color-mix(in oklab, var(--primary) 14%, transparent);
+}
+
+.np-tab-add:disabled {
+  opacity: 0.6;
+  cursor: default;
+}
+
+.np-save-state {
+  flex-shrink: 0;
+  font-size: 0.6875rem;
+  font-weight: 500;
+  color: var(--muted-foreground);
+  white-space: nowrap;
+}
+
+/* ── Toolbar ─────────────────────────────────────────────── */
+
+.np-toolbar {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 0.25rem;
+  padding: 0.5rem 0.75rem;
+  border-bottom: 1px solid var(--border);
+}
+
+.np-toolbar-divider {
+  width: 1px;
+  height: 1.25rem;
+  margin: 0 0.375rem;
+  background: var(--border);
+}
+
+.np-select {
+  height: 2rem;
+  padding: 0 0.5rem;
+  font-size: 0.8125rem;
+  font-weight: 500;
+  color: var(--foreground);
+  background: var(--card);
+  border: 1px solid var(--border);
+  border-radius: 0.5rem;
+  cursor: pointer;
+  outline: none;
+}
+
+.np-select:focus {
+  border-color: var(--primary);
+}
+
+.np-tool {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.1rem;
+  min-width: 2rem;
+  height: 2rem;
+  padding: 0 0.35rem;
+  border: 1px solid transparent;
+  border-radius: 0.5rem;
+  background: none;
+  color: var(--muted-foreground);
+  cursor: pointer;
+  transition: background 0.15s, color 0.15s;
+}
+
+.np-tool:hover {
+  background: var(--accent);
+  color: var(--foreground);
+}
+
+.np-tool.is-active {
+  background: color-mix(in oklab, var(--primary) 12%, transparent);
+  border-color: color-mix(in oklab, var(--primary) 30%, transparent);
+  color: var(--primary);
+}
+
+/* Shortcut discoverability hint, pushed to the end of the toolbar. */
+.np-shortcut-hint {
+  margin-left: auto;
+  padding-left: 0.5rem;
+  font-size: 0.625rem;
+  color: var(--muted-foreground);
+  white-space: nowrap;
+}
+
+.np-shortcut-hint kbd {
+  padding: 0.05rem 0.25rem;
+  font-family: inherit;
+  font-size: 0.625rem;
+  border: 1px solid var(--border);
+  border-radius: 0.25rem;
+  background: color-mix(in oklab, var(--muted) 60%, transparent);
+}
+
+@media (max-width: 900px) {
+  .np-shortcut-hint {
+    display: none;
+  }
+}
+
+/* ── Colour picker ───────────────────────────────────────── */
+
+.np-color {
+  position: relative;
+}
+
+.np-color-caret {
+  width: 0.7rem;
+  height: 0.7rem;
+}
+
+.np-color-menu {
+  position: absolute;
+  top: calc(100% + 0.35rem);
+  left: 0;
+  z-index: 50;
+  display: grid;
+  grid-template-columns: repeat(4, 1.5rem);
+  gap: 0.375rem;
+  padding: 0.5rem;
+  background: var(--popover);
+  border: 1px solid var(--border);
+  border-radius: 0.75rem;
+  box-shadow: 0 10px 24px rgb(0 0 0 / 0.14);
+}
+
+.np-swatch {
+  width: 1.5rem;
+  height: 1.5rem;
+  border: 2px solid transparent;
+  border-radius: 9999px;
+  box-shadow: inset 0 0 0 1px rgb(0 0 0 / 0.1);
+  cursor: pointer;
+}
+
+.np-swatch.is-active {
+  border-color: var(--foreground);
+}
+
+.np-swatch-default {
+  background:
+    linear-gradient(to top left, transparent calc(50% - 1px), var(--destructive) 50%, transparent calc(50% + 1px)),
+    var(--card);
+}
+
+/* ── Editor surface ──────────────────────────────────────── */
+
+.np-editor-surface {
+  max-height: 60vh;
+  overflow-y: auto;
+}
+
+.np-editor-content {
+  min-height: 20rem;
+  /* Right padding reserves the gutter the per-block copy buttons sit in. */
+  padding: 1.25rem 3rem 1.25rem 1.5rem;
+  font-size: 0.9375rem;
+  line-height: 1.7;
+  color: var(--foreground);
+  outline: none;
+}
+
+/* Anchor for the copy-button widget decoration. */
+.np-editor-content > p,
+.np-editor-content > h2,
+.np-editor-content > h3 {
+  position: relative;
+}
+
+.np-editor-content > * + * {
+  margin-top: 0.6rem;
+}
+
+.np-editor-content h2 {
+  font-size: 1.375rem;
+  font-weight: 700;
+  line-height: 1.3;
+}
+
+.np-editor-content h3 {
+  font-size: 1.0625rem;
+  font-weight: 600;
+  line-height: 1.4;
+  color: var(--muted-foreground);
+}
+
+.np-editor-content mark {
+  background: #fef08a;
+  color: #1a1a1a;
+  padding: 0.05em 0.15em;
+  border-radius: 0.2rem;
+}
+
+/*
+ * Placeholder for a brand-new, empty note.
+ *
+ * Matches only a lone paragraph that is genuinely empty. ProseMirror renders
+ * such a paragraph as `<p><br class="ProseMirror-trailingBreak"></p>`, so the
+ * `:has()` arm covers the live editor and `:empty` covers a bare parse. This
+ * avoids pulling in @tiptap/extension-placeholder for one line of text.
+ */
+.np-editor-content > p:only-child:empty::before,
+.np-editor-content > p:only-child:has(> br.ProseMirror-trailingBreak:only-child)::before {
+  content: "Start writing…";
+  color: var(--muted-foreground);
+  float: left;
+  height: 0;
+  pointer-events: none;
+}
+
+/* ── Per-block copy button ───────────────────────────────── */
+
+.np-copy {
+  position: absolute;
+  top: 0.15em;
+  right: -2.25rem;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 1.6rem;
+  height: 1.6rem;
+  padding: 0;
+  border: 1px solid transparent;
+  border-radius: 0.4rem;
+  background: transparent;
+  color: var(--muted-foreground);
+  cursor: pointer;
+  opacity: 0;
+  transition: opacity 0.12s, background 0.12s, color 0.12s, border-color 0.12s;
+  user-select: none;
+}
+
+/*
+ * Reveal on hover or keyboard focus; keep it visible while showing feedback.
+ * `.is-hovered` is set by the extension when any block of the paragraph group
+ * is hovered — a plain `:hover` rule can only cover the block the button sits
+ * in, which would miss the rest of a multi-block paragraph.
+ */
+.np-copy.is-hovered,
+.np-copy:hover,
+.np-copy:focus-visible,
+.np-copy.is-copied,
+.np-copy.is-failed {
+  opacity: 1;
+}
+
+.np-copy:hover {
+  background: var(--accent);
+  border-color: var(--border);
+  color: var(--foreground);
+}
+
+.np-copy.is-copied {
+  color: #10b981;
+  border-color: color-mix(in oklab, #10b981 40%, transparent);
+  background: color-mix(in oklab, #10b981 12%, transparent);
+}
+
+.np-copy.is-failed {
+  color: var(--destructive);
+  border-color: color-mix(in oklab, var(--destructive) 40%, transparent);
+  background: color-mix(in oklab, var(--destructive) 12%, transparent);
+}
+
+.np-copy svg {
+  width: 0.85rem;
+  height: 0.85rem;
+}
+
+/* Swap the copy glyph for a tick while the feedback is showing. */
+.np-copy .np-copy-done {
+  display: none;
+}
+
+.np-copy.is-copied .np-copy-icon {
+  display: none;
+}
+
+.np-copy.is-copied .np-copy-done {
+  display: block;
+}
+
+/* "Copied" / "Copy failed" bubble. */
+.np-copy[data-feedback]::after {
+  content: attr(data-feedback);
+  position: absolute;
+  right: calc(100% + 0.4rem);
+  top: 50%;
+  transform: translateY(-50%);
+  padding: 0.15rem 0.4rem;
+  font-size: 0.625rem;
+  font-weight: 600;
+  line-height: 1.4;
+  white-space: nowrap;
+  color: var(--card);
+  background: var(--foreground);
+  border-radius: 0.3rem;
+  pointer-events: none;
+}
+
+/* Coarse pointers cannot hover: keep the buttons permanently visible. */
+@media (hover: none) {
+  .np-copy {
+    opacity: 0.55;
+  }
+}
+
+/* ── Delete confirmation ─────────────────────────────────── */
+
+.np-overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 60;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 1rem;
+  background: rgb(0 0 0 / 0.5);
+}
+
+.np-modal {
+  width: 100%;
+  max-width: 22rem;
+  padding: 1.5rem;
+  text-align: center;
+  background: var(--card);
+  border: 1px solid var(--border);
+  border-radius: 1rem;
+  box-shadow: 0 20px 40px rgb(0 0 0 / 0.2);
+}
+
+.np-modal-icon {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 2.75rem;
+  height: 2.75rem;
+  margin-bottom: 0.75rem;
+  border-radius: 9999px;
+  background: color-mix(in oklab, var(--destructive) 12%, transparent);
+  color: var(--destructive);
+}
+
+.np-modal-actions {
+  display: flex;
+  gap: 0.5rem;
+  margin-top: 1.25rem;
+}
+
+.np-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.35rem;
+  flex: 1;
+  padding: 0.5rem 1rem;
+  font-size: 0.8125rem;
+  font-weight: 600;
+  color: var(--foreground);
+  background: var(--card);
+  border: 1px solid var(--border);
+  border-radius: 0.625rem;
+  cursor: pointer;
+}
+
+.np-btn:hover {
+  background: var(--accent);
+}
+
+.np-btn:disabled {
+  opacity: 0.6;
+  cursor: default;
+}
+
+.np-btn-primary {
+  flex: 0 0 auto;
+  color: var(--primary-foreground);
+  background: var(--primary);
+  border-color: var(--primary);
+}
+
+.np-btn-primary:hover {
+  background: color-mix(in oklab, var(--primary) 88%, black);
+}
+
+.np-btn-danger {
+  color: var(--destructive-foreground);
+  background: var(--destructive);
+  border-color: var(--destructive);
+}
+
+.np-btn-danger:hover {
+  background: color-mix(in oklab, var(--destructive) 88%, black);
+}
+
+/* ── Narrow screens ──────────────────────────────────────── */
+
+@media (max-width: 640px) {
+  .np-tabs {
+    flex-direction: column;
+    align-items: stretch;
+    gap: 0.5rem;
+  }
+
+  .np-save-state {
+    text-align: right;
+  }
+
+  .np-tab-label {
+    max-width: 7.5rem;
+  }
+
+  .np-editor-content {
+    /* Keep the copy-button gutter on the right at narrow widths. */
+    padding: 1rem 2.5rem 1rem 1rem;
+  }
+
+  .np-copy {
+    right: -2rem;
+  }
+
+  .np-editor-surface {
+    max-height: none;
+  }
+}

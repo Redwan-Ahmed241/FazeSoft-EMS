@@ -14,7 +14,7 @@ export const getApiBaseUrl = (): string => {
   if (typeof window !== 'undefined' && window.location.hostname.includes('vercel.app')) {
     return 'https://faze-soft-ems-backend.vercel.app/api';
   }
-  return 'http://localhost:8000/api';
+  return '/api';
 };
 
 const API_BASE_URL = getApiBaseUrl();
@@ -50,13 +50,22 @@ class ApiClient {
     if (response.status === 401) {
       localStorage.removeItem('token');
       localStorage.removeItem('user');
+      localStorage.removeItem('fazemate_user');
       const base = window.location.pathname.startsWith('/ems') ? '/ems/' : '/';
       window.location.href = base;
       throw new Error('Session expired. Please login again.');
     }
 
-    // Handle 403 - Forbidden
+    // Handle 403 - Forbidden or Unauthenticated
     if (response.status === 403) {
+      const token = localStorage.getItem('token');
+      if (!token) {
+        localStorage.removeItem('user');
+        localStorage.removeItem('fazemate_user');
+        const base = window.location.pathname.startsWith('/ems') ? '/ems/' : '/';
+        window.location.href = base;
+        throw new Error('Session expired. Please login again.');
+      }
       throw new Error('You do not have permission to access this resource');
     }
 
@@ -68,21 +77,30 @@ class ApiClient {
     // Try to parse error message from response
     const contentType = response.headers.get('content-type');
     if (!response.ok) {
+      let errorMessage = `Request failed (${response.status})`;
       try {
-        const errorData = contentType?.includes('application/json')
-          ? await response.json()
-          : { detail: 'An error occurred' };
-        
-        const errorMessage = errorData.detail || errorData.message || 'An error occurred';
-        throw new Error(errorMessage);
-      } catch (error) {
-        throw error instanceof Error ? error : new Error('An error occurred');
+        if (contentType?.includes('application/json')) {
+          const errorData = await response.json();
+          errorMessage = errorData.detail || errorData.message || errorMessage;
+        } else {
+          const text = await response.text();
+          if (text) errorMessage = text;
+        }
+      } catch {
+        // use default status message
       }
+      throw new Error(errorMessage);
     }
 
     // Parse successful response
     if (contentType?.includes('application/json')) {
-      return await response.json();
+      // 204/205 carry no body, but FastAPI still labels them application/json,
+      // so parsing straight away would throw on the empty payload.
+      if (response.status === 204 || response.status === 205) {
+        return {} as T;
+      }
+      const text = await response.text();
+      return text ? (JSON.parse(text) as T) : ({} as T);
     }
 
     return {} as T;
