@@ -9,4 +9,12 @@ export const noteApi = {
   update: (noteId: string, data: NoteUpdate) =>
     apiClient.patch<NoteOut>(`/notes/${noteId}`, data),
   remove: (noteId: string) => apiClient.delete<void>(`/notes/${noteId}`),
+  divide: (noteId: string) => apiClient.post<NoteOut>(`/notes/${noteId}/divide`),
+  createSubsection: (noteId: string, data: NoteCreate) =>
+    apiClient.post<NoteOut>(`/notes/${noteId}/subsections`, data),
+  reorderSubsections: (parentId: string, order: string[]) =>
+    apiClient.post<NoteOut>(`/notes/${parentId}/subsections/reorder`, { order }),
+  reorderSections: (order: string[]) =>
+    apiClient.post<NoteListOut[]>("/notes/reorder", { order }),
 };
+
