@@ -6,7 +6,9 @@ import { TextStyle, Color } from "@tiptap/extension-text-style";
 import { Bold, Italic, Underline, Highlighter, Baseline, ChevronDown } from "lucide-react";
 import { sanitizeHtml } from "../../utils/sanitizeHtml";
 import { BlockCopyButton } from "./extensions/BlockCopyButton";
+import { BlockFold } from "./extensions/BlockFold";
 import { LineTools } from "./extensions/LineTools";
+
 
 // Headline / Subtitle / Paragraph, mapped onto the schema's block nodes.
 const BLOCK_STYLES = [
@@ -76,6 +78,7 @@ export function NoteEditor({ noteId, content, onChange }: NoteEditorProps) {
       Color,
       Highlight,
       BlockCopyButton,
+      BlockFold,
       LineTools,
     ],
     content: sanitizeHtml(content),

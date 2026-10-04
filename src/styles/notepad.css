@@ -87,6 +87,44 @@
   box-shadow: 0 1px 2px rgb(0 0 0 / 0.06);
 }
 
+.np-tab[draggable="true"] {
+  cursor: grab;
+}
+
+.np-tab[draggable="true"]:active {
+  cursor: grabbing;
+}
+
+.np-tab.is-dragging {
+  opacity: 0.35;
+  transform: scale(0.96);
+  border-style: dashed;
+  border-color: var(--primary);
+}
+
+.np-tab.is-drag-over {
+  border-color: var(--primary);
+  background: color-mix(in oklab, var(--primary) 12%, var(--card));
+  box-shadow: 0 0 0 2px color-mix(in oklab, var(--primary) 35%, transparent);
+  transform: translateY(-1px);
+}
+
+.np-tab-grip {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--muted-foreground);
+  opacity: 0.45;
+  cursor: grab;
+  margin-left: 0.4rem;
+  margin-right: -0.25rem;
+}
+
+.np-tab:hover .np-tab-grip {
+  opacity: 0.9;
+  color: var(--foreground);
+}
+
 .np-tab-label {
   max-width: 11rem;
   overflow: hidden;
@@ -167,6 +205,233 @@
   font-weight: 500;
   color: var(--muted-foreground);
   white-space: nowrap;
+}
+
+/* ── Subsections Bar ──────────────────────────────────────── */
+
+.np-sub-bar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.75rem;
+  padding: 0.45rem 0.75rem;
+  background: color-mix(in oklab, var(--muted) 28%, transparent);
+  border-bottom: 1px solid var(--border);
+}
+
+.np-sub-bar-left {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  flex: 1;
+  min-width: 0;
+  overflow-x: auto;
+  scrollbar-width: thin;
+}
+
+.np-sub-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.3rem;
+  padding: 0.2rem 0.45rem;
+  font-size: 0.6875rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  color: var(--muted-foreground);
+  border-radius: 0.375rem;
+  background: color-mix(in oklab, var(--muted) 60%, transparent);
+  flex-shrink: 0;
+}
+
+.np-sub-tabs {
+  display: flex;
+  align-items: center;
+  gap: 0.3rem;
+  flex: 1;
+  min-width: 0;
+  overflow-x: auto;
+  scrollbar-width: thin;
+}
+
+.np-sub-tab {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.25rem;
+  flex-shrink: 0;
+  padding: 0.25rem 0.5rem;
+  font-size: 0.75rem;
+  font-weight: 500;
+  color: var(--muted-foreground);
+  background: var(--card);
+  border: 1px solid var(--border);
+  border-radius: 0.5rem;
+  transition: all 0.15s ease;
+  user-select: none;
+}
+
+.np-sub-tab:hover {
+  color: var(--foreground);
+  border-color: color-mix(in oklab, var(--primary) 40%, var(--border));
+}
+
+.np-sub-tab.is-active {
+  color: var(--primary);
+  font-weight: 600;
+  background: color-mix(in oklab, var(--primary) 10%, var(--card));
+  border-color: color-mix(in oklab, var(--primary) 50%, transparent);
+  box-shadow: 0 1px 2px rgb(0 0 0 / 0.04);
+}
+
+.np-sub-tab[draggable="true"] {
+  cursor: grab;
+}
+
+.np-sub-tab[draggable="true"]:active {
+  cursor: grabbing;
+}
+
+.np-sub-tab.is-dragging {
+  opacity: 0.35;
+  transform: scale(0.96);
+  border-style: dashed;
+  border-color: var(--primary);
+}
+
+.np-sub-tab.is-drag-over {
+  border-color: var(--primary);
+  background: color-mix(in oklab, var(--primary) 12%, var(--card));
+  box-shadow: 0 0 0 2px color-mix(in oklab, var(--primary) 35%, transparent);
+  transform: translateY(-1px);
+}
+
+.np-sub-grip {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--muted-foreground);
+  opacity: 0.45;
+  cursor: grab;
+  margin-right: -0.1rem;
+}
+
+.np-sub-tab:hover .np-sub-grip {
+  opacity: 0.9;
+  color: var(--foreground);
+}
+
+.np-sub-tab-label {
+  max-width: 8.5rem;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  background: none;
+  border: none;
+  padding: 0;
+  font-size: inherit;
+  font-weight: inherit;
+  color: inherit;
+  cursor: pointer;
+}
+
+.np-sub-tab-input {
+  width: 7.5rem;
+  padding: 0.15rem 0.35rem;
+  font-size: 0.75rem;
+  font-weight: 500;
+  color: var(--foreground);
+  background: var(--input-background, var(--background));
+  border: 1px solid var(--primary);
+  border-radius: 0.375rem;
+  outline: none;
+}
+
+.np-sub-tab-action {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0.15rem;
+  border-radius: 0.25rem;
+  background: none;
+  border: none;
+  color: var(--muted-foreground);
+  cursor: pointer;
+  opacity: 0.7;
+  transition: opacity 0.12s, color 0.12s;
+}
+
+.np-sub-tab-action:hover {
+  opacity: 1;
+  color: var(--foreground);
+}
+
+.np-sub-tab-action.is-delete:hover {
+  color: var(--destructive);
+  background: color-mix(in oklab, var(--destructive) 10%, transparent);
+}
+
+.np-sub-add-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.25rem;
+  flex-shrink: 0;
+  padding: 0.25rem 0.55rem;
+  font-size: 0.75rem;
+  font-weight: 500;
+  color: var(--primary);
+  background: color-mix(in oklab, var(--primary) 6%, transparent);
+  border: 1px dashed color-mix(in oklab, var(--primary) 35%, transparent);
+  border-radius: 0.5rem;
+  cursor: pointer;
+  transition: all 0.15s ease;
+}
+
+.np-sub-add-btn:hover {
+  background: color-mix(in oklab, var(--primary) 12%, transparent);
+  border-color: var(--primary);
+}
+
+.np-sub-add-btn:disabled {
+  opacity: 0.6;
+  cursor: default;
+}
+
+/* Divide into subsections banner / button when section has no subsections */
+.np-divide-banner {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0.35rem 0.75rem;
+  background: color-mix(in oklab, var(--muted) 22%, transparent);
+  border-bottom: 1px solid var(--border);
+  font-size: 0.75rem;
+  color: var(--muted-foreground);
+}
+
+.np-divide-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35rem;
+  padding: 0.25rem 0.65rem;
+  font-size: 0.75rem;
+  font-weight: 600;
+  color: var(--primary);
+  background: color-mix(in oklab, var(--primary) 8%, var(--card));
+  border: 1px solid color-mix(in oklab, var(--primary) 30%, var(--border));
+  border-radius: 0.5rem;
+  cursor: pointer;
+  transition: all 0.15s ease;
+}
+
+.np-divide-btn:hover {
+  background: color-mix(in oklab, var(--primary) 15%, var(--card));
+  border-color: var(--primary);
+  box-shadow: 0 1px 3px rgb(0 0 0 / 0.05);
+}
+
+.np-divide-btn:disabled {
+  opacity: 0.6;
+  cursor: default;
 }
 
 /* ── Toolbar ─────────────────────────────────────────────── */
@@ -309,29 +574,134 @@
 
 .np-editor-content {
   min-height: 20rem;
-  /* Right padding reserves the gutter the per-block copy buttons sit in. */
-  padding: 1.25rem 3rem 1.25rem 1.5rem;
+  /* Left padding reserves the gutter for the VS Code style fold toggle,
+     Right padding reserves the gutter for the per-block copy buttons. */
+  padding: 1.25rem 3rem 1.25rem 2.6rem;
   font-size: 0.9375rem;
-  line-height: 1.7;
+  line-height: 1.45;
   color: var(--foreground);
   outline: none;
 }
 
-/* Anchor for the copy-button widget decoration. */
+/* Anchor for the copy-button and fold-toggle widget decorations. */
 .np-editor-content > p,
 .np-editor-content > h2,
 .np-editor-content > h3 {
   position: relative;
 }
 
+/* ── VS Code Style Block Folding / Minimizing ─────────────── */
+
+.np-fold-toggle {
+  position: absolute;
+  top: 0.15em;
+  left: -1.8rem;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 1.35rem;
+  height: 1.35rem;
+  padding: 0;
+  border: 1px solid transparent;
+  border-radius: 0.35rem;
+  background: transparent;
+  color: var(--muted-foreground);
+  cursor: pointer;
+  opacity: 0;
+  transition: opacity 0.15s, background 0.15s, color 0.15s, transform 0.15s;
+  user-select: none;
+}
+
+/* Reveal fold toggle on hover over block or gutter, or always when folded */
+.np-editor-content > *:hover .np-fold-toggle,
+.np-fold-toggle:hover,
+.np-fold-toggle:focus-visible,
+.np-fold-toggle.is-folded {
+  opacity: 1;
+}
+
+.np-fold-toggle:hover {
+  background: var(--accent);
+  color: var(--foreground);
+}
+
+.np-fold-toggle.is-folded {
+  color: var(--primary);
+  background: color-mix(in oklab, var(--primary) 12%, transparent);
+  border-color: color-mix(in oklab, var(--primary) 30%, transparent);
+}
+
+.np-fold-toggle svg {
+  width: 0.8rem;
+  height: 0.8rem;
+}
+
+/* Ensure headlines and folded block headers are ALWAYS 100% visible */
+.np-editor-content > h2,
+.np-editor-content > h3,
+.np-editor-content > .is-folded-parent {
+  display: block !important;
+}
+
+/* Folded child blocks are hidden (only non-heading paragraph children) */
+.np-editor-content > p.is-folded-child {
+  display: none !important;
+}
+
+/* Folded paragraph clamped to single line preview */
+.np-editor-content > p.is-folded-paragraph {
+  max-height: 1.6em;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  color: var(--muted-foreground);
+  cursor: pointer;
+}
+
+.np-editor-content > p.is-folded-paragraph:hover {
+  color: var(--foreground);
+}
+
+/* VS Code style folded badge indicator */
+.np-fold-badge {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  margin-left: 0.5rem;
+  padding: 0.05rem 0.35rem;
+  font-size: 0.6875rem;
+  font-weight: 700;
+  line-height: 1.2;
+  letter-spacing: 0.1em;
+  color: var(--primary);
+  background: color-mix(in oklab, var(--primary) 12%, transparent);
+  border: 1px solid color-mix(in oklab, var(--primary) 30%, transparent);
+  border-radius: 0.25rem;
+  vertical-align: middle;
+  cursor: pointer;
+  user-select: none;
+  transition: all 0.15s ease;
+}
+
+.np-fold-badge:hover {
+  background: color-mix(in oklab, var(--primary) 22%, transparent);
+  border-color: var(--primary);
+  transform: scale(1.05);
+}
+
 .np-editor-content > * + * {
-  margin-top: 0.6rem;
+  margin-top: 0.2rem;
+}
+
+.np-editor-content > p {
+  margin: 0;
 }
 
 .np-editor-content h2 {
   font-size: 1.375rem;
   font-weight: 700;
   line-height: 1.3;
+  margin-top: 0.85rem;
 }
 
 .np-editor-content h3 {
@@ -339,6 +709,7 @@
   font-weight: 600;
   line-height: 1.4;
   color: var(--muted-foreground);
+  margin-top: 0.65rem;
 }
 
 .np-editor-content mark {
@@ -559,12 +930,22 @@
     gap: 0.5rem;
   }
 
+  .np-sub-bar {
+    flex-direction: column;
+    align-items: stretch;
+    gap: 0.4rem;
+  }
+
   .np-save-state {
     text-align: right;
   }
 
   .np-tab-label {
     max-width: 7.5rem;
+  }
+
+  .np-sub-tab-label {
+    max-width: 6.5rem;
   }
 
   .np-editor-content {
